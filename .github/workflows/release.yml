@@ -19,7 +19,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            cmake pkg-config \
+            cmake pkg-config zip \
             libx11-dev libxext-dev libxinerama-dev libxrandr-dev libxcursor-dev libxi-dev \
             libxcomposite-dev libxdamage-dev libxfixes-dev libxrender-dev libxss-dev \
             libxkbcommon-dev libxkbcommon-x11-dev \
@@ -34,8 +34,7 @@ jobs:
       - name: Package
         run: |
           mkdir -p dist
-          cd build_juce6/16Second_artefacts/VST3
-          zip -r ../../../../dist/16-Second-linux-vst3.zip 16-Second.vst3
+          zip -r "$GITHUB_WORKSPACE/dist/16-Second-linux-vst3.zip" build_juce6/16Second_artefacts/VST3/16-Second.vst3
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -58,7 +57,7 @@ jobs:
       - name: Package
         run: |
           New-Item -ItemType Directory -Force -Path dist | Out-Null
-          Compress-Archive -Path build_win\16Second_artefacts\VST3\16-Second.vst3 -DestinationPath dist\16-Second-windows-vst3.zip
+          Compress-Archive -Path build_win\16Second_artefacts\Release\VST3\16-Second.vst3 -DestinationPath dist\16-Second-windows-vst3.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
