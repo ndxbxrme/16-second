@@ -5,6 +5,9 @@ project(16Second VERSION 0.1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Workaround for GCC 13 + JUCE 6.1.6 missing <utility> include in juceaide.
+add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-include;utility>")
+
 include(FetchContent)
 
 # JUCE
