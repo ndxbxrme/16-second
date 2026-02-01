@@ -5,6 +5,7 @@ Experimental VST3 inspired by the Electro-Harmonix 16-Second Digital Delay. The 
 
 ## Status
 - Milestone 7: modulation LFO (Mod Depth/Speed) integrated into delay time.
+- Starter presets available via host preset menu.
 
 ## Build (Linux/WSL)
 Dependencies (Ubuntu/Debian):

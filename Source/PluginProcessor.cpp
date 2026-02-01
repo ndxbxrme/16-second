@@ -9,6 +9,7 @@ SixteenSecondAudioProcessor::SixteenSecondAudioProcessor()
                          .withOutput("Output", juce::AudioChannelSet::stereo(), true)),
       apvts(*this, nullptr, "PARAMS", createParameterLayout())
 {
+    initializePresets();
 }
 
 SixteenSecondAudioProcessor::~SixteenSecondAudioProcessor() = default;
@@ -40,21 +41,28 @@ double SixteenSecondAudioProcessor::getTailLengthSeconds() const
 
 int SixteenSecondAudioProcessor::getNumPrograms()
 {
-    return 1;
+    return static_cast<int>(presets.size());
 }
 
 int SixteenSecondAudioProcessor::getCurrentProgram()
 {
-    return 0;
+    return currentProgram;
 }
 
-void SixteenSecondAudioProcessor::setCurrentProgram(int)
+void SixteenSecondAudioProcessor::setCurrentProgram(int index)
 {
+    if (index < 0 || index >= getNumPrograms())
+        return;
+
+    currentProgram = index;
+    presets[static_cast<size_t>(index)].apply(apvts);
 }
 
-const juce::String SixteenSecondAudioProcessor::getProgramName(int)
+const juce::String SixteenSecondAudioProcessor::getProgramName(int index)
 {
-    return {};
+    if (index < 0 || index >= getNumPrograms())
+        return {};
+    return presets[static_cast<size_t>(index)].name;
 }
 
 void SixteenSecondAudioProcessor::changeProgramName(int, const juce::String&)
@@ -505,6 +513,153 @@ void SixteenSecondAudioProcessor::resetLoopState()
     currentState = LoopState::Idle;
     lastClear = false;
     noiseSeed = 0x1234567u;
+}
+
+void SixteenSecondAudioProcessor::setParamValue(const juce::String& paramId, float value)
+{
+    if (auto* param = apvts.getParameter(paramId))
+        param->setValueNotifyingHost(param->convertTo0to1(value));
+}
+
+void SixteenSecondAudioProcessor::setParamBool(const juce::String& paramId, bool value)
+{
+    if (auto* param = apvts.getParameter(paramId))
+        param->setValueNotifyingHost(value ? 1.0f : 0.0f);
+}
+
+void SixteenSecondAudioProcessor::initializePresets()
+{
+    presets.clear();
+
+    presets.push_back({
+        "Unsafe Fripp Wash",
+        [this](juce::AudioProcessorValueTreeState& state)
+        {
+            juce::ignoreUnused(state);
+            setParamValue("delayTime", 9000.0f);
+            setParamValue("feedback", 1.05f);
+            setParamValue("mix", 0.7f);
+            setParamValue("outputGain", -3.0f);
+            setParamValue("modDepth", 0.2f);
+            setParamValue("modSpeed", 0.2f);
+            setParamValue("filter", 0.45f);
+            setParamValue("noise", 0.2f);
+            setParamValue("overdubLevel", 0.5f);
+            setParamValue("erodeAmount", 0.25f);
+            setParamBool("reverse", false);
+            setParamBool("halfSpeed", false);
+            setParamBool("authentic", true);
+            setParamBool("limiter", true);
+            setParamBool("record", false);
+            setParamBool("play", false);
+            setParamBool("overdub", false);
+            setParamBool("clear", false);
+        }
+    });
+
+    presets.push_back({
+        "Clock Tear",
+        [this](juce::AudioProcessorValueTreeState& state)
+        {
+            juce::ignoreUnused(state);
+            setParamValue("delayTime", 1200.0f);
+            setParamValue("feedback", 0.8f);
+            setParamValue("mix", 0.5f);
+            setParamValue("outputGain", 0.0f);
+            setParamValue("modDepth", 0.6f);
+            setParamValue("modSpeed", 0.7f);
+            setParamValue("filter", 0.7f);
+            setParamValue("noise", 0.35f);
+            setParamValue("overdubLevel", 0.5f);
+            setParamValue("erodeAmount", 0.4f);
+            setParamBool("reverse", false);
+            setParamBool("halfSpeed", false);
+            setParamBool("authentic", true);
+            setParamBool("limiter", true);
+            setParamBool("record", false);
+            setParamBool("play", false);
+            setParamBool("overdub", false);
+            setParamBool("clear", false);
+        }
+    });
+
+    presets.push_back({
+        "Half-speed Ghosts",
+        [this](juce::AudioProcessorValueTreeState& state)
+        {
+            juce::ignoreUnused(state);
+            setParamValue("delayTime", 8000.0f);
+            setParamValue("feedback", 0.75f);
+            setParamValue("mix", 0.6f);
+            setParamValue("outputGain", -2.0f);
+            setParamValue("modDepth", 0.1f);
+            setParamValue("modSpeed", 0.1f);
+            setParamValue("filter", 0.5f);
+            setParamValue("noise", 0.15f);
+            setParamValue("overdubLevel", 0.5f);
+            setParamValue("erodeAmount", 0.3f);
+            setParamBool("reverse", false);
+            setParamBool("halfSpeed", true);
+            setParamBool("authentic", false);
+            setParamBool("limiter", true);
+            setParamBool("record", false);
+            setParamBool("play", false);
+            setParamBool("overdub", false);
+            setParamBool("clear", false);
+        }
+    });
+
+    presets.push_back({
+        "Reverse Smear",
+        [this](juce::AudioProcessorValueTreeState& state)
+        {
+            juce::ignoreUnused(state);
+            setParamValue("delayTime", 5000.0f);
+            setParamValue("feedback", 0.7f);
+            setParamValue("mix", 0.55f);
+            setParamValue("outputGain", -1.0f);
+            setParamValue("modDepth", 0.25f);
+            setParamValue("modSpeed", 0.3f);
+            setParamValue("filter", 0.55f);
+            setParamValue("noise", 0.2f);
+            setParamValue("overdubLevel", 0.5f);
+            setParamValue("erodeAmount", 0.35f);
+            setParamBool("reverse", true);
+            setParamBool("halfSpeed", false);
+            setParamBool("authentic", false);
+            setParamBool("limiter", true);
+            setParamBool("record", false);
+            setParamBool("play", false);
+            setParamBool("overdub", false);
+            setParamBool("clear", false);
+        }
+    });
+
+    presets.push_back({
+        "Erode Drone",
+        [this](juce::AudioProcessorValueTreeState& state)
+        {
+            juce::ignoreUnused(state);
+            setParamValue("delayTime", 12000.0f);
+            setParamValue("feedback", 0.95f);
+            setParamValue("mix", 0.8f);
+            setParamValue("outputGain", -4.0f);
+            setParamValue("modDepth", 0.35f);
+            setParamValue("modSpeed", 0.15f);
+            setParamValue("filter", 0.35f);
+            setParamValue("noise", 0.45f);
+            setParamValue("overdubLevel", 0.8f);
+            setParamValue("erodeAmount", 0.7f);
+            setParamBool("reverse", false);
+            setParamBool("halfSpeed", false);
+            setParamBool("authentic", true);
+            setParamBool("limiter", true);
+            setParamBool("record", false);
+            setParamBool("play", false);
+            setParamBool("overdub", false);
+            setParamBool("clear", false);
+        }
+    });
 }
 
 float SixteenSecondAudioProcessor::generateNoise()

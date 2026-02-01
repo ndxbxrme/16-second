@@ -19,3 +19,4 @@
 - Added FeedbackModel tests.
 - Added output limiter with UI toggle and tests.
 - Added modulation LFO with Mod Depth/Speed and tests.
+- Added starter presets for core textures.

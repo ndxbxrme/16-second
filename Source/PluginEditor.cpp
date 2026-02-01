@@ -169,7 +169,7 @@ SixteenSecondAudioProcessorEditor::~SixteenSecondAudioProcessorEditor() = defaul
 
 void SixteenSecondAudioProcessorEditor::paint(juce::Graphics& g)
 {
-    const auto bounds = getLocalBounds();
+    auto bounds = getLocalBounds();
     juce::Colour base = juce::Colour::fromRGB(18, 18, 20);
     juce::Colour panel = juce::Colour::fromRGB(32, 32, 36);
     juce::Colour accent = juce::Colour::fromRGB(231, 168, 74);

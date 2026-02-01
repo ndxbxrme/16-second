@@ -12,6 +12,8 @@
 #include "dsp/LFO.h"
 #include <cstdint>
 #include <atomic>
+#include <functional>
+#include <vector>
 
 class SixteenSecondAudioProcessor final : public juce::AudioProcessor
 {
@@ -51,7 +53,19 @@ public:
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
 private:
+    struct Preset
+    {
+        juce::String name;
+        std::function<void(juce::AudioProcessorValueTreeState&)> apply;
+    };
+
+    void setParamValue(const juce::String& paramId, float value);
+    void setParamBool(const juce::String& paramId, bool value);
+    void initializePresets();
+
     juce::AudioProcessorValueTreeState apvts;
+    std::vector<Preset> presets;
+    int currentProgram = 0;
 
     template <typename SampleType>
     void processBlockInternal(juce::AudioBuffer<SampleType>& buffer);

@@ -24,6 +24,14 @@
 - Mod Depth: modulation depth for delay time.
 - Mod Speed: modulation speed (0.05–8 Hz).
 
+## Presets
+Starter presets are available via the host preset menu:
+- Unsafe Fripp Wash
+- Clock Tear
+- Half-speed Ghosts
+- Reverse Smear
+- Erode Drone
+
 ## Notes
 - Loop capture is intentionally minimal and will be refined in later milestones.
 - SAFE-ish mode uses delay-time smoothing with linear interpolation.
