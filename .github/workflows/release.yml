@@ -71,8 +71,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Select macOS SDK
+        run: |
+          SDK=$(xcodebuild -showsdks | awk '/macosx14/ {print $NF}' | tail -1)
+          if [ -n "$SDK" ]; then
+            echo "Using SDK $SDK"
+            echo "SDKROOT=$(xcrun --sdk $SDK --show-sdk-path)" >> $GITHUB_ENV
+          else
+            echo "No macosx14 SDK found, using default"
+          fi
+
       - name: Configure
-        run: cmake -S . -B build_macos -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0
+        run: |
+          if [ -n "$SDKROOT" ]; then
+            cmake -S . -B build_macos -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 -DCMAKE_OSX_SYSROOT="$SDKROOT"
+          else
+            cmake -S . -B build_macos -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0
+          fi
 
       - name: Build
         run: cmake --build build_macos
