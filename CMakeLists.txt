@@ -57,6 +57,8 @@ target_sources(16Second
     Source/dsp/Overdub.h
     Source/dsp/RateStepper.cpp
     Source/dsp/RateStepper.h
+    Source/dsp/Smoother.cpp
+    Source/dsp/Smoother.h
 )
 
 target_compile_definitions(16Second

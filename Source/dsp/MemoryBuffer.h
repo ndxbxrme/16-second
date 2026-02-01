@@ -16,6 +16,7 @@ public:
     void advanceWrite();
 
     float readSample(int channel, int index) const;
+    float readSampleLinear(int channel, float index) const;
     void writeSample(int channel, int index, float value);
 
 private:

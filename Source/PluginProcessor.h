@@ -6,6 +6,7 @@
 #include "dsp/Overdub.h"
 #include "dsp/RateStepper.h"
 #include "dsp/StateMachine.h"
+#include "dsp/Smoother.h"
 
 class SixteenSecondAudioProcessor final : public juce::AudioProcessor
 {
@@ -55,6 +56,7 @@ private:
     MemoryBuffer memoryBuffer;
     StateMachine stateMachine;
     RateStepper loopStepper;
+    Smoother delaySmoother;
     juce::AudioBuffer<float> tempFloatBuffer;
 
     int maxBufferSamples = 0;

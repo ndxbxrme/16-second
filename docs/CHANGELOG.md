@@ -13,3 +13,5 @@
 - Added StateMachine and Overdub tests.
 - Added rate-based loop stepping with Half-speed and Reverse.
 - Added RateStepper tests.
+- Added SAFE-ish delay-time smoothing with linear interpolation and AUTHENTIC toggle.
+- Added Smoother tests.

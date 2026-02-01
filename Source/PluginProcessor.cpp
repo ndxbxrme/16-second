@@ -67,6 +67,7 @@ void SixteenSecondAudioProcessor::prepareToPlay(double sampleRate, int samplesPe
     maxBufferSamples = static_cast<int>(std::ceil(sampleRate * maxSeconds));
     memoryBuffer.prepare(getTotalNumInputChannels(), maxBufferSamples);
     tempFloatBuffer.setSize(getTotalNumInputChannels(), samplesPerBlock);
+    delaySmoother.reset(sampleRate, 0.0f, 10.0f);
     resetLoopState();
 }
 
@@ -103,12 +104,25 @@ void SixteenSecondAudioProcessor::processBlockInternal(juce::AudioBuffer<SampleT
     const auto isClear = apvts.getRawParameterValue("clear")->load() > 0.5f;
     const auto isHalfSpeed = apvts.getRawParameterValue("halfSpeed")->load() > 0.5f;
     const auto isReverse = apvts.getRawParameterValue("reverse")->load() > 0.5f;
+    const auto isAuthentic = apvts.getRawParameterValue("authentic")->load() > 0.5f;
 
     if (maxBufferSamples <= 0 || memoryBuffer.getSize() <= 0)
         return;
 
-    const auto delaySamples = juce::jlimit(0, maxBufferSamples - 1,
-                                           static_cast<int>(delayMs * (getSampleRate() / 1000.0)));
+    const auto targetDelaySamples =
+        juce::jlimit(0, maxBufferSamples - 1,
+                     static_cast<int>(delayMs * (getSampleRate() / 1000.0)));
+
+    if (!isAuthentic)
+    {
+        delaySmoother.setTimeMs(10.0f);
+        delaySmoother.setTarget(static_cast<float>(targetDelaySamples));
+    }
+    else
+    {
+        delaySmoother.setTarget(static_cast<float>(targetDelaySamples));
+        delaySmoother.process();
+    }
 
     const auto mixClamped = juce::jlimit(0.0f, 1.0f, mix);
     const auto dryGain = std::cos(mixClamped * juce::MathConstants<float>::halfPi);
@@ -201,13 +215,17 @@ void SixteenSecondAudioProcessor::processBlockInternal(juce::AudioBuffer<SampleT
 
     for (int i = 0; i < numSamples; ++i)
     {
+        const auto delaySamples = isAuthentic
+                                      ? static_cast<float>(targetDelaySamples)
+                                      : delaySmoother.process();
         const auto writeIndex = memoryBuffer.getWriteIndex();
-        const auto readIndex = writeIndex - delaySamples;
+        const auto readIndex = static_cast<float>(writeIndex) - delaySamples;
 
         for (int channel = 0; channel < numChannels; ++channel)
         {
             const auto input = buffer.getSample(channel, i);
-            const auto readSample = memoryBuffer.readSample(channel, readIndex);
+            const auto readSample = isAuthentic ? memoryBuffer.readSample(channel, static_cast<int>(readIndex))
+                                                 : memoryBuffer.readSampleLinear(channel, readIndex);
             const auto writeValue = static_cast<float>(input + readSample * feedback);
             memoryBuffer.writeSample(channel, writeIndex, writeValue);
             const auto mixed = static_cast<SampleType>(input * dryGain + readSample * wetGain);
@@ -343,6 +361,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout SixteenSecondAudioProcessor:
         "Reverse",
         false));
 
+    params.push_back(std::make_unique<juce::AudioParameterBool>(
+        "authentic",
+        "Authentic",
+        false));
+
     return {params.begin(), params.end()};
 }
 
@@ -354,6 +377,7 @@ void SixteenSecondAudioProcessor::resetLoopState()
     loopReadIndex = 0;
     recordedSamples = 0;
     loopStepper.reset(0.0);
+    delaySmoother.reset(getSampleRate(), 0.0f, 10.0f);
     currentState = LoopState::Idle;
     lastClear = false;
 }

@@ -45,12 +45,14 @@ private:
     juce::TextButton clearButton;
     juce::ToggleButton halfSpeedButton;
     juce::ToggleButton reverseButton;
+    juce::ToggleButton authenticButton;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> recordAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> playAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> overdubAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> clearAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> halfSpeedAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> reverseAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> authenticAttachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SixteenSecondAudioProcessorEditor)
 };

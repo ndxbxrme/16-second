@@ -1,6 +1,6 @@
 # 16-Second — Usage (Early Scaffold)
 
-## Current state (Milestone 4)
+## Current state (Milestone 5)
 - Basic delay line with Delay Time, Feedback, Mix, and Output Gain.
 - Record/Play/Overdub state machine with destructive overdub and erosion.
 
@@ -17,6 +17,8 @@
 - Clear: resets loop memory and state.
 - Half-speed: plays loop at half speed (lower pitch, longer duration).
 - Reverse: plays loop backwards.
+- Authentic: toggles unsafe delay time behavior (abrupt pointer jumps).
 
 ## Notes
 - Loop capture is intentionally minimal and will be refined in later milestones.
+- SAFE-ish mode uses delay-time smoothing with linear interpolation.

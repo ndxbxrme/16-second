@@ -1,6 +1,7 @@
 #include "MemoryBuffer.h"
 
 #include <algorithm>
+#include <cmath>
 
 void MemoryBuffer::prepare(int channels, int sizeInSamples)
 {
@@ -53,6 +54,24 @@ float MemoryBuffer::readSample(int channel, int index) const
 
     const auto offset = static_cast<size_t>(channel * size + wrappedIndex);
     return data[offset];
+}
+
+float MemoryBuffer::readSampleLinear(int channel, float index) const
+{
+    if (size <= 0 || numChannels <= 0)
+        return 0.0f;
+
+    if (channel < 0 || channel >= numChannels)
+        return 0.0f;
+
+    auto baseIndex = static_cast<int>(std::floor(index));
+    const auto frac = index - static_cast<float>(baseIndex);
+    const auto nextIndex = baseIndex + 1;
+
+    const auto sampleA = readSample(channel, baseIndex);
+    const auto sampleB = readSample(channel, nextIndex);
+
+    return sampleA + (sampleB - sampleA) * frac;
 }
 
 void MemoryBuffer::writeSample(int channel, int index, float value)
