@@ -5,9 +5,11 @@ add_executable(${TEST_TARGET}
   test_memory_buffer.cpp
   test_state_machine.cpp
   test_overdub.cpp
+  test_rate_stepper.cpp
   ${CMAKE_SOURCE_DIR}/Source/dsp/MemoryBuffer.cpp
   ${CMAKE_SOURCE_DIR}/Source/dsp/StateMachine.cpp
   ${CMAKE_SOURCE_DIR}/Source/dsp/Overdub.cpp
+  ${CMAKE_SOURCE_DIR}/Source/dsp/RateStepper.cpp
 )
 
 target_link_libraries(${TEST_TARGET}

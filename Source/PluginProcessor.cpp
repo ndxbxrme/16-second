@@ -101,6 +101,8 @@ void SixteenSecondAudioProcessor::processBlockInternal(juce::AudioBuffer<SampleT
     const auto isPlaying = apvts.getRawParameterValue("play")->load() > 0.5f;
     const auto isOverdubbing = apvts.getRawParameterValue("overdub")->load() > 0.5f;
     const auto isClear = apvts.getRawParameterValue("clear")->load() > 0.5f;
+    const auto isHalfSpeed = apvts.getRawParameterValue("halfSpeed")->load() > 0.5f;
+    const auto isReverse = apvts.getRawParameterValue("reverse")->load() > 0.5f;
 
     if (maxBufferSamples <= 0 || memoryBuffer.getSize() <= 0)
         return;
@@ -130,12 +132,14 @@ void SixteenSecondAudioProcessor::processBlockInternal(juce::AudioBuffer<SampleT
             if (loopStartIndex < 0)
                 loopStartIndex += maxBufferSamples;
             loopReadIndex = loopStartIndex;
+            loopStepper.reset(0.0);
         }
 
         if ((nextState == LoopState::Play || nextState == LoopState::Overdub) &&
             (currentState != LoopState::Play && currentState != LoopState::Overdub))
         {
             loopReadIndex = loopStartIndex;
+            loopStepper.reset(0.0);
         }
     }
 
@@ -160,49 +164,37 @@ void SixteenSecondAudioProcessor::processBlockInternal(juce::AudioBuffer<SampleT
         return;
     }
 
-    if (currentState == LoopState::Play && loopLengthSamples > 0)
+    if ((currentState == LoopState::Play || currentState == LoopState::Overdub) && loopLengthSamples > 0)
     {
+        const auto rateSign = isReverse ? -1.0 : 1.0;
+        const auto rate = (isHalfSpeed ? 0.5 : 1.0) * rateSign;
+        loopStepper.setRate(rate);
+
         for (int i = 0; i < numSamples; ++i)
         {
+            const auto readIndex = loopStartIndex + loopStepper.getIndex(loopLengthSamples);
+
             for (int channel = 0; channel < numChannels; ++channel)
             {
                 const auto input = buffer.getSample(channel, i);
-                const auto readSample = memoryBuffer.readSample(channel, loopReadIndex);
+                const auto readSample = memoryBuffer.readSample(channel, readIndex);
                 const auto mixed = static_cast<SampleType>(input * dryGain + readSample * wetGain);
                 buffer.setSample(channel, i, mixed * gain);
+
+                if (currentState == LoopState::Overdub)
+                {
+                    const auto existing = readSample;
+                    const auto writeValue = Overdub::apply(existing,
+                                                           static_cast<float>(input),
+                                                           readSample,
+                                                           overdubLevel,
+                                                           feedback,
+                                                           erodeAmount);
+                    memoryBuffer.writeSample(channel, readIndex, writeValue);
+                }
             }
 
-            ++loopReadIndex;
-            if (loopReadIndex >= loopStartIndex + loopLengthSamples)
-                loopReadIndex = loopStartIndex;
-        }
-        return;
-    }
-
-    if (currentState == LoopState::Overdub && loopLengthSamples > 0)
-    {
-        for (int i = 0; i < numSamples; ++i)
-        {
-            for (int channel = 0; channel < numChannels; ++channel)
-            {
-                const auto input = buffer.getSample(channel, i);
-                const auto readSample = memoryBuffer.readSample(channel, loopReadIndex);
-                const auto existing = readSample;
-                const auto writeValue = Overdub::apply(existing,
-                                                       static_cast<float>(input),
-                                                       readSample,
-                                                       overdubLevel,
-                                                       feedback,
-                                                       erodeAmount);
-                memoryBuffer.writeSample(channel, loopReadIndex, writeValue);
-
-                const auto mixed = static_cast<SampleType>(input * dryGain + readSample * wetGain);
-                buffer.setSample(channel, i, mixed * gain);
-            }
-
-            ++loopReadIndex;
-            if (loopReadIndex >= loopStartIndex + loopLengthSamples)
-                loopReadIndex = loopStartIndex;
+            loopStepper.advance();
         }
         return;
     }
@@ -341,6 +333,16 @@ juce::AudioProcessorValueTreeState::ParameterLayout SixteenSecondAudioProcessor:
         "Clear",
         false));
 
+    params.push_back(std::make_unique<juce::AudioParameterBool>(
+        "halfSpeed",
+        "Half-speed",
+        false));
+
+    params.push_back(std::make_unique<juce::AudioParameterBool>(
+        "reverse",
+        "Reverse",
+        false));
+
     return {params.begin(), params.end()};
 }
 
@@ -351,6 +353,7 @@ void SixteenSecondAudioProcessor::resetLoopState()
     loopStartIndex = 0;
     loopReadIndex = 0;
     recordedSamples = 0;
+    loopStepper.reset(0.0);
     currentState = LoopState::Idle;
     lastClear = false;
 }

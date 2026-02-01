@@ -93,7 +93,17 @@ SixteenSecondAudioProcessorEditor::SixteenSecondAudioProcessorEditor(SixteenSeco
     clearAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
         processor.getAPVTS(), "clear", clearButton);
 
-    setSize(720, 280);
+    halfSpeedButton.setButtonText("Half");
+    reverseButton.setButtonText("Reverse");
+    addAndMakeVisible(halfSpeedButton);
+    addAndMakeVisible(reverseButton);
+
+    halfSpeedAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
+        processor.getAPVTS(), "halfSpeed", halfSpeedButton);
+    reverseAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
+        processor.getAPVTS(), "reverse", reverseButton);
+
+    setSize(840, 280);
 }
 
 SixteenSecondAudioProcessorEditor::~SixteenSecondAudioProcessorEditor() = default;
@@ -103,7 +113,7 @@ void SixteenSecondAudioProcessorEditor::paint(juce::Graphics& g)
     g.fillAll(juce::Colours::black);
     g.setColour(juce::Colours::white);
     g.setFont(16.0f);
-    g.drawFittedText("16-Second (Milestone 3)", getLocalBounds().removeFromTop(30),
+    g.drawFittedText("16-Second (Milestone 4)", getLocalBounds().removeFromTop(30),
                     juce::Justification::centred, 1);
 }
 
@@ -127,4 +137,6 @@ void SixteenSecondAudioProcessorEditor::resized()
     playButton.setBounds(buttonArea.removeFromLeft(120));
     overdubButton.setBounds(buttonArea.removeFromLeft(120));
     clearButton.setBounds(buttonArea.removeFromLeft(120));
+    halfSpeedButton.setBounds(buttonArea.removeFromLeft(120));
+    reverseButton.setBounds(buttonArea.removeFromLeft(120));
 }

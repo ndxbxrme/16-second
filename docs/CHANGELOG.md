@@ -11,3 +11,5 @@
 - Added state machine with Record/Play/Overdub and Clear.
 - Added destructive overdub with Erode Amount + Overdub Level parameters.
 - Added StateMachine and Overdub tests.
+- Added rate-based loop stepping with Half-speed and Reverse.
+- Added RateStepper tests.

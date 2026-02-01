@@ -1,6 +1,6 @@
 # 16-Second — Usage (Early Scaffold)
 
-## Current state (Milestone 3)
+## Current state (Milestone 4)
 - Basic delay line with Delay Time, Feedback, Mix, and Output Gain.
 - Record/Play/Overdub state machine with destructive overdub and erosion.
 
@@ -15,6 +15,8 @@
 - Play: plays the last recorded loop when available.
 - Overdub: destructive sound-on-sound write into the loop.
 - Clear: resets loop memory and state.
+- Half-speed: plays loop at half speed (lower pitch, longer duration).
+- Reverse: plays loop backwards.
 
 ## Notes
 - Loop capture is intentionally minimal and will be refined in later milestones.

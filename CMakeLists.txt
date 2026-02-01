@@ -55,6 +55,8 @@ target_sources(16Second
     Source/dsp/StateMachine.h
     Source/dsp/Overdub.cpp
     Source/dsp/Overdub.h
+    Source/dsp/RateStepper.cpp
+    Source/dsp/RateStepper.h
 )
 
 target_compile_definitions(16Second
