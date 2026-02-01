@@ -1,11 +1,18 @@
 # 16-Second (VST3)
 [![CI](https://github.com/ndxbxrme/16-second/actions/workflows/ci.yml/badge.svg)](https://github.com/ndxbxrme/16-second/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/ndxbxrme/16-second?include_prereleases=true)](https://github.com/ndxbxrme/16-second/releases)
 
 Experimental VST3 inspired by the Electro-Harmonix 16-Second Digital Delay. The focus is on the behavioral feel (unsafe time changes, destructive overdub, evolving feedback), not a circuit-perfect emulation.
 
 ## Status
 - Milestone 7: modulation LFO (Mod Depth/Speed) integrated into delay time.
 - Starter presets available via host preset menu.
+
+## Releases
+- Latest builds:
+  - Windows: https://github.com/ndxbxrme/16-second/releases/latest/download/16-Second-windows-vst3.zip
+  - Linux: https://github.com/ndxbxrme/16-second/releases/latest/download/16-Second-linux-vst3.zip
+  - macOS: https://github.com/ndxbxrme/16-second/releases/latest/download/16-Second-macos-vst3.zip
 
 ## Build (Linux/WSL)
 Dependencies (Ubuntu/Debian):

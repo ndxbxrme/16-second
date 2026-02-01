@@ -65,8 +65,31 @@ jobs:
           name: windows-vst3
           path: dist/16-Second-windows-vst3.zip
 
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S . -B build_macos
+
+      - name: Build
+        run: cmake --build build_macos
+
+      - name: Package
+        run: |
+          mkdir -p dist
+          ditto -c -k --sequesterRsrc --keepParent build_macos/16Second_artefacts/VST3/16-Second.vst3 dist/16-Second-macos-vst3.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-vst3
+          path: dist/16-Second-macos-vst3.zip
+
   release:
-    needs: [build-linux, build-windows]
+    needs: [build-linux, build-windows, build-macos]
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
@@ -80,3 +103,4 @@ jobs:
           files: |
             dist/linux-vst3/16-Second-linux-vst3.zip
             dist/windows-vst3/16-Second-windows-vst3.zip
+            dist/macos-vst3/16-Second-macos-vst3.zip
