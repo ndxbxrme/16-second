@@ -3,6 +3,8 @@
 #include <JuceHeader.h>
 
 #include "dsp/MemoryBuffer.h"
+#include "dsp/Overdub.h"
+#include "dsp/StateMachine.h"
 
 class SixteenSecondAudioProcessor final : public juce::AudioProcessor
 {
@@ -50,6 +52,7 @@ private:
     void resetLoopState();
 
     MemoryBuffer memoryBuffer;
+    StateMachine stateMachine;
     juce::AudioBuffer<float> tempFloatBuffer;
 
     int maxBufferSamples = 0;
@@ -57,7 +60,8 @@ private:
     int loopStartIndex = 0;
     int loopReadIndex = 0;
     int recordedSamples = 0;
-    bool wasRecording = false;
+    LoopState currentState = LoopState::Idle;
+    bool lastClear = false;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SixteenSecondAudioProcessor)
 };

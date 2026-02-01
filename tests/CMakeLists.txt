@@ -3,7 +3,11 @@ set(TEST_TARGET sixteen_second_tests)
 add_executable(${TEST_TARGET}
   test_sanity.cpp
   test_memory_buffer.cpp
+  test_state_machine.cpp
+  test_overdub.cpp
   ${CMAKE_SOURCE_DIR}/Source/dsp/MemoryBuffer.cpp
+  ${CMAKE_SOURCE_DIR}/Source/dsp/StateMachine.cpp
+  ${CMAKE_SOURCE_DIR}/Source/dsp/Overdub.cpp
 )
 
 target_link_libraries(${TEST_TARGET}

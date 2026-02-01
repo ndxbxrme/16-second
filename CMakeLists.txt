@@ -51,6 +51,10 @@ target_sources(16Second
     Source/PluginEditor.h
     Source/dsp/MemoryBuffer.cpp
     Source/dsp/MemoryBuffer.h
+    Source/dsp/StateMachine.cpp
+    Source/dsp/StateMachine.h
+    Source/dsp/Overdub.cpp
+    Source/dsp/Overdub.h
 )
 
 target_compile_definitions(16Second

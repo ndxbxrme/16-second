@@ -27,14 +27,26 @@ private:
     juce::Label mixLabel;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> mixAttachment;
 
+    juce::Slider overdubLevelSlider;
+    juce::Label overdubLevelLabel;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> overdubLevelAttachment;
+
+    juce::Slider erodeAmountSlider;
+    juce::Label erodeAmountLabel;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> erodeAmountAttachment;
+
     juce::Slider outputGainSlider;
     juce::Label outputGainLabel;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> outputGainAttachment;
 
     juce::ToggleButton recordButton;
     juce::ToggleButton playButton;
+    juce::ToggleButton overdubButton;
+    juce::TextButton clearButton;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> recordAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> playAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> overdubAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> clearAttachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SixteenSecondAudioProcessorEditor)
 };

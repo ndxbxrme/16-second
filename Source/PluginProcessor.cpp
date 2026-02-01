@@ -93,10 +93,14 @@ void SixteenSecondAudioProcessor::processBlockInternal(juce::AudioBuffer<SampleT
     const auto delayMs = apvts.getRawParameterValue("delayTime")->load();
     const auto feedback = apvts.getRawParameterValue("feedback")->load();
     const auto mix = apvts.getRawParameterValue("mix")->load();
+    const auto overdubLevel = apvts.getRawParameterValue("overdubLevel")->load();
+    const auto erodeAmount = apvts.getRawParameterValue("erodeAmount")->load();
     const auto gainDb = apvts.getRawParameterValue("outputGain")->load();
     const auto gain = juce::Decibels::decibelsToGain(static_cast<SampleType>(gainDb));
     const auto isRecording = apvts.getRawParameterValue("record")->load() > 0.5f;
     const auto isPlaying = apvts.getRawParameterValue("play")->load() > 0.5f;
+    const auto isOverdubbing = apvts.getRawParameterValue("overdub")->load() > 0.5f;
+    const auto isClear = apvts.getRawParameterValue("clear")->load() > 0.5f;
 
     if (maxBufferSamples <= 0 || memoryBuffer.getSize() <= 0)
         return;
@@ -108,19 +112,36 @@ void SixteenSecondAudioProcessor::processBlockInternal(juce::AudioBuffer<SampleT
     const auto dryGain = std::cos(mixClamped * juce::MathConstants<float>::halfPi);
     const auto wetGain = std::sin(mixClamped * juce::MathConstants<float>::halfPi);
 
-    if (isRecording && !wasRecording)
+    const auto clearEdge = isClear && !lastClear;
+    lastClear = isClear;
+
+    const auto hasLoop = loopLengthSamples > 0;
+    const auto nextState = stateMachine.update(isRecording, isPlaying, isOverdubbing, hasLoop, clearEdge);
+
+    if (clearEdge)
         resetLoopState();
 
-    if (wasRecording && !isRecording)
+    if (currentState != nextState)
     {
-        loopLengthSamples = juce::jlimit(1, maxBufferSamples, recordedSamples);
-        loopStartIndex = memoryBuffer.getWriteIndex() - loopLengthSamples;
-        if (loopStartIndex < 0)
-            loopStartIndex += maxBufferSamples;
-        loopReadIndex = loopStartIndex;
+        if (currentState == LoopState::Record && nextState != LoopState::Record)
+        {
+            loopLengthSamples = juce::jlimit(1, maxBufferSamples, recordedSamples);
+            loopStartIndex = memoryBuffer.getWriteIndex() - loopLengthSamples;
+            if (loopStartIndex < 0)
+                loopStartIndex += maxBufferSamples;
+            loopReadIndex = loopStartIndex;
+        }
+
+        if ((nextState == LoopState::Play || nextState == LoopState::Overdub) &&
+            (currentState != LoopState::Play && currentState != LoopState::Overdub))
+        {
+            loopReadIndex = loopStartIndex;
+        }
     }
 
-    if (isRecording)
+    currentState = nextState;
+
+    if (currentState == LoopState::Record)
     {
         for (int i = 0; i < numSamples; ++i)
         {
@@ -136,13 +157,10 @@ void SixteenSecondAudioProcessor::processBlockInternal(juce::AudioBuffer<SampleT
                 ++recordedSamples;
         }
 
-        wasRecording = true;
         return;
     }
 
-    wasRecording = false;
-
-    if (isPlaying && loopLengthSamples > 0)
+    if (currentState == LoopState::Play && loopLengthSamples > 0)
     {
         for (int i = 0; i < numSamples; ++i)
         {
@@ -158,26 +176,53 @@ void SixteenSecondAudioProcessor::processBlockInternal(juce::AudioBuffer<SampleT
             if (loopReadIndex >= loopStartIndex + loopLengthSamples)
                 loopReadIndex = loopStartIndex;
         }
+        return;
     }
-    else
+
+    if (currentState == LoopState::Overdub && loopLengthSamples > 0)
     {
         for (int i = 0; i < numSamples; ++i)
         {
-            const auto writeIndex = memoryBuffer.getWriteIndex();
-            const auto readIndex = writeIndex - delaySamples;
-
             for (int channel = 0; channel < numChannels; ++channel)
             {
                 const auto input = buffer.getSample(channel, i);
-                const auto readSample = memoryBuffer.readSample(channel, readIndex);
-                const auto writeValue = static_cast<float>(input + readSample * feedback);
-                memoryBuffer.writeSample(channel, writeIndex, writeValue);
+                const auto readSample = memoryBuffer.readSample(channel, loopReadIndex);
+                const auto existing = readSample;
+                const auto writeValue = Overdub::apply(existing,
+                                                       static_cast<float>(input),
+                                                       readSample,
+                                                       overdubLevel,
+                                                       feedback,
+                                                       erodeAmount);
+                memoryBuffer.writeSample(channel, loopReadIndex, writeValue);
+
                 const auto mixed = static_cast<SampleType>(input * dryGain + readSample * wetGain);
                 buffer.setSample(channel, i, mixed * gain);
             }
 
-            memoryBuffer.advanceWrite();
+            ++loopReadIndex;
+            if (loopReadIndex >= loopStartIndex + loopLengthSamples)
+                loopReadIndex = loopStartIndex;
         }
+        return;
+    }
+
+    for (int i = 0; i < numSamples; ++i)
+    {
+        const auto writeIndex = memoryBuffer.getWriteIndex();
+        const auto readIndex = writeIndex - delaySamples;
+
+        for (int channel = 0; channel < numChannels; ++channel)
+        {
+            const auto input = buffer.getSample(channel, i);
+            const auto readSample = memoryBuffer.readSample(channel, readIndex);
+            const auto writeValue = static_cast<float>(input + readSample * feedback);
+            memoryBuffer.writeSample(channel, writeIndex, writeValue);
+            const auto mixed = static_cast<SampleType>(input * dryGain + readSample * wetGain);
+            buffer.setSample(channel, i, mixed * gain);
+        }
+
+        memoryBuffer.advanceWrite();
     }
 }
 
@@ -258,6 +303,18 @@ juce::AudioProcessorValueTreeState::ParameterLayout SixteenSecondAudioProcessor:
         0.5f));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "overdubLevel",
+        "Overdub Level",
+        juce::NormalisableRange<float>{0.0f, 1.0f, 0.001f},
+        0.6f));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "erodeAmount",
+        "Erode Amount",
+        juce::NormalisableRange<float>{0.0f, 1.0f, 0.001f},
+        0.35f));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
         "outputGain",
         "Output Gain",
         juce::NormalisableRange<float>{-24.0f, 12.0f, 0.01f},
@@ -274,6 +331,16 @@ juce::AudioProcessorValueTreeState::ParameterLayout SixteenSecondAudioProcessor:
         "Play",
         false));
 
+    params.push_back(std::make_unique<juce::AudioParameterBool>(
+        "overdub",
+        "Overdub",
+        false));
+
+    params.push_back(std::make_unique<juce::AudioParameterBool>(
+        "clear",
+        "Clear",
+        false));
+
     return {params.begin(), params.end()};
 }
 
@@ -284,7 +351,8 @@ void SixteenSecondAudioProcessor::resetLoopState()
     loopStartIndex = 0;
     loopReadIndex = 0;
     recordedSamples = 0;
-    wasRecording = false;
+    currentState = LoopState::Idle;
+    lastClear = false;
 }
 
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
