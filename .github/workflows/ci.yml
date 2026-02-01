@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake pkg-config \
+            libx11-dev libxext-dev libxinerama-dev libxrandr-dev libxcursor-dev libxi-dev \
+            libxcomposite-dev libxdamage-dev libxfixes-dev libxrender-dev libxss-dev \
+            libxkbcommon-dev libxkbcommon-x11-dev \
+            libfreetype6-dev libasound2-dev libcurl4-openssl-dev
+
+      - name: Configure
+        run: cmake -S . -B build_juce6
+
+      - name: Build
+        run: cmake --build build_juce6
+
+      - name: Test
+        run: cd build_juce6 && ctest -V

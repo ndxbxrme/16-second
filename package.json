@@ -1,0 +1,10 @@
+{
+  "name": "16-second",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "configure": "cmake -S /home/kieron/code/16-second -B /home/kieron/code/16-second/build_juce6",
+    "build": "cmake --build /home/kieron/code/16-second/build_juce6",
+    "ctest": "cmake --build /home/kieron/code/16-second/build_juce6 && (cd /home/kieron/code/16-second/build_juce6 && ctest)"
+  }
+}

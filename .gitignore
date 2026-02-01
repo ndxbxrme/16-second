@@ -1,0 +1,48 @@
+# Build directories
+/build/
+/build_*/
+/CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+CTestTestfile.cmake
+Testing/
+DartConfiguration.tcl
+
+# JUCE-generated artifacts
+**/JuceLibraryCode/
+**/*_artefacts/
+
+# Plugin binaries
+*.vst3
+*.component
+*.app
+*.dll
+*.so
+*.dylib
+*.exe
+
+# IDE files
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln
+*.vcxproj*
+*.filters
+*.xcworkspace/
+*.xcodeproj/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Node
+node_modules/
+
+# Coverage
+**/coverage/
