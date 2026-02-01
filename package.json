@@ -5,6 +5,7 @@
   "scripts": {
     "configure": "cmake -S /home/kieron/code/16-second -B /home/kieron/code/16-second/build_juce6",
     "build": "cmake --build /home/kieron/code/16-second/build_juce6",
-    "ctest": "cmake --build /home/kieron/code/16-second/build_juce6 && (cd /home/kieron/code/16-second/build_juce6 && ctest)"
+    "ctest": "cmake --build /home/kieron/code/16-second/build_juce6 && (cd /home/kieron/code/16-second/build_juce6 && ctest)",
+    "win:build": "scripts\\build_and_copy_windows.bat"
   }
 }

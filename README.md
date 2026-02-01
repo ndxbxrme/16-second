@@ -4,7 +4,7 @@
 Experimental VST3 inspired by the Electro-Harmonix 16-Second Digital Delay. The focus is on the behavioral feel (unsafe time changes, destructive overdub, evolving feedback), not a circuit-perfect emulation.
 
 ## Status
-- Milestone 6: added lossy feedback model (filter + noise/grit) and feedback degradation on overdub.
+- Milestone 7: modulation LFO (Mod Depth/Speed) integrated into delay time.
 
 ## Build (Linux/WSL)
 Dependencies (Ubuntu/Debian):
@@ -29,6 +29,27 @@ Run tests:
 cd build_juce6
 ctest -V
 ```
+
+## Build (Windows, VST3 for Audacity)
+You must build on Windows to produce a Windows `.vst3` bundle. The Linux `.so` from WSL will not load in Windows Audacity.
+
+Prereqs:
+- Visual Studio 2022 with the C++ workload
+- CMake (3.16+)
+
+Configure and build (PowerShell, repo root):
+```
+cmake --preset win-release
+cmake --build --preset win-release
+```
+
+Copy the plugin to your VST3 folder:
+```
+PowerShell -ExecutionPolicy Bypass -File .\scripts\copy_vst3_windows.ps1 -BuildDir build_win -Vst3Dir "C:\Program Files\Common Files\VST3"
+```
+
+Then in Audacity:
+- Rescan plugins, enable “16-Second”
 
 ## Scripts
 If you have npm installed, convenience scripts exist:

@@ -9,6 +9,7 @@
 #include "dsp/Smoother.h"
 #include "dsp/FeedbackModel.h"
 #include "dsp/Limiter.h"
+#include "dsp/LFO.h"
 #include <cstdint>
 #include <atomic>
 
@@ -66,6 +67,7 @@ private:
     FeedbackModel feedbackModel;
     Limiter limiterL;
     Limiter limiterR;
+    LFO lfo;
     juce::AudioBuffer<float> tempFloatBuffer;
 
     int maxBufferSamples = 0;

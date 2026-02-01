@@ -71,6 +71,7 @@ void SixteenSecondAudioProcessor::prepareToPlay(double sampleRate, int samplesPe
     feedbackModel.reset(sampleRate);
     limiterL.reset(sampleRate);
     limiterR.reset(sampleRate);
+    lfo.reset(sampleRate);
     resetLoopState();
 }
 
@@ -101,6 +102,8 @@ void SixteenSecondAudioProcessor::processBlockInternal(juce::AudioBuffer<SampleT
     const auto erodeAmount = apvts.getRawParameterValue("erodeAmount")->load();
     const auto filterAmount = apvts.getRawParameterValue("filter")->load();
     const auto noiseAmount = apvts.getRawParameterValue("noise")->load();
+    const auto modDepth = apvts.getRawParameterValue("modDepth")->load();
+    const auto modSpeed = apvts.getRawParameterValue("modSpeed")->load();
     const auto gainDb = apvts.getRawParameterValue("outputGain")->load();
     const auto limiterOn = apvts.getRawParameterValue("limiter")->load() > 0.5f;
     const auto gain = juce::Decibels::decibelsToGain(static_cast<SampleType>(gainDb));
@@ -118,6 +121,12 @@ void SixteenSecondAudioProcessor::processBlockInternal(juce::AudioBuffer<SampleT
     const auto targetDelaySamples =
         juce::jlimit(0, maxBufferSamples - 1,
                      static_cast<int>(delayMs * (getSampleRate() / 1000.0)));
+
+    const auto modHz = 0.05f + modSpeed * (8.0f - 0.05f);
+    lfo.setFrequency(modHz);
+
+    const auto maxModSamples = static_cast<float>(maxBufferSamples) * 0.02f;
+    const auto modDepthSamples = juce::jlimit(0.0f, maxModSamples, modDepth * maxModSamples);
 
     if (!isAuthentic)
     {
@@ -240,9 +249,10 @@ void SixteenSecondAudioProcessor::processBlockInternal(juce::AudioBuffer<SampleT
 
     for (int i = 0; i < numSamples; ++i)
     {
+        const auto modOffset = lfo.process() * modDepthSamples;
         const auto delaySamples = isAuthentic
-                                      ? static_cast<float>(targetDelaySamples)
-                                      : delaySmoother.process();
+                                      ? static_cast<float>(targetDelaySamples) + modOffset
+                                      : delaySmoother.process() + modOffset;
         const auto writeIndex = memoryBuffer.getWriteIndex();
         const auto readIndex = static_cast<float>(writeIndex) - delaySamples;
 
@@ -459,6 +469,18 @@ juce::AudioProcessorValueTreeState::ParameterLayout SixteenSecondAudioProcessor:
         juce::NormalisableRange<float>{0.0f, 1.0f, 0.001f},
         0.25f));
 
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "modDepth",
+        "Mod Depth",
+        juce::NormalisableRange<float>{0.0f, 1.0f, 0.001f},
+        0.15f));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "modSpeed",
+        "Mod Speed",
+        juce::NormalisableRange<float>{0.0f, 1.0f, 0.001f},
+        0.25f));
+
     params.push_back(std::make_unique<juce::AudioParameterBool>(
         "limiter",
         "Limiter",
@@ -479,6 +501,7 @@ void SixteenSecondAudioProcessor::resetLoopState()
     feedbackModel.reset(getSampleRate());
     limiterL.reset(getSampleRate());
     limiterR.reset(getSampleRate());
+    lfo.reset(getSampleRate());
     currentState = LoopState::Idle;
     lastClear = false;
     noiseSeed = 0x1234567u;

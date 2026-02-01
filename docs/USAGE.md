@@ -1,6 +1,6 @@
 # 16-Second — Usage (Early Scaffold)
 
-## Current state (Milestone 6)
+## Current state (Milestone 7)
 - Basic delay line with Delay Time, Feedback, Mix, and Output Gain.
 - Record/Play/Overdub state machine with destructive overdub and erosion.
 
@@ -21,6 +21,8 @@
 - Filter: darkens feedback and loop writes.
 - Noise/Grit: adds noise + bit reduction in the feedback loop.
 - Limiter: safety limiter at output (on by default).
+- Mod Depth: modulation depth for delay time.
+- Mod Speed: modulation speed (0.05–8 Hz).
 
 ## Notes
 - Loop capture is intentionally minimal and will be refined in later milestones.

@@ -80,6 +80,28 @@ SixteenSecondAudioProcessorEditor::SixteenSecondAudioProcessorEditor(SixteenSeco
     noiseAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         processor.getAPVTS(), "noise", noiseSlider);
 
+    modDepthSlider.setSliderStyle(juce::Slider::LinearVertical);
+    modDepthSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    modDepthSlider.setRange(0.0, 1.0, 0.001);
+    modDepthLabel.setText("Mod Depth", juce::dontSendNotification);
+    modDepthLabel.setJustificationType(juce::Justification::centred);
+    modDepthLabel.attachToComponent(&modDepthSlider, false);
+    addAndMakeVisible(modDepthSlider);
+    addAndMakeVisible(modDepthLabel);
+    modDepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        processor.getAPVTS(), "modDepth", modDepthSlider);
+
+    modSpeedSlider.setSliderStyle(juce::Slider::LinearVertical);
+    modSpeedSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    modSpeedSlider.setRange(0.0, 1.0, 0.001);
+    modSpeedLabel.setText("Mod Speed", juce::dontSendNotification);
+    modSpeedLabel.setJustificationType(juce::Justification::centred);
+    modSpeedLabel.attachToComponent(&modSpeedSlider, false);
+    addAndMakeVisible(modSpeedSlider);
+    addAndMakeVisible(modSpeedLabel);
+    modSpeedAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        processor.getAPVTS(), "modSpeed", modSpeedSlider);
+
     outputGainSlider.setSliderStyle(juce::Slider::LinearVertical);
     outputGainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
     outputGainSlider.setRange(-24.0, 12.0, 0.01);
@@ -137,7 +159,7 @@ SixteenSecondAudioProcessorEditor::SixteenSecondAudioProcessorEditor(SixteenSeco
     limiterAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
         processor.getAPVTS(), "limiter", limiterButton);
 
-    setSize(1280, 280);
+    setSize(1480, 280);
     startTimerHz(30);
 }
 
@@ -148,7 +170,7 @@ void SixteenSecondAudioProcessorEditor::paint(juce::Graphics& g)
     g.fillAll(juce::Colours::black);
     g.setColour(juce::Colours::white);
     g.setFont(16.0f);
-    g.drawFittedText("16-Second (Milestone 6+Limiter)", getLocalBounds().removeFromTop(30),
+    g.drawFittedText("16-Second (Milestone 7)", getLocalBounds().removeFromTop(30),
                     juce::Justification::centred, 1);
 
     g.setColour(juce::Colours::darkgrey);
@@ -192,6 +214,8 @@ void SixteenSecondAudioProcessorEditor::resized()
     erodeAmountSlider.setBounds(sliderArea.removeFromLeft(sliderWidth));
     filterSlider.setBounds(sliderArea.removeFromLeft(sliderWidth));
     noiseSlider.setBounds(sliderArea.removeFromLeft(sliderWidth));
+    modDepthSlider.setBounds(sliderArea.removeFromLeft(sliderWidth));
+    modSpeedSlider.setBounds(sliderArea.removeFromLeft(sliderWidth));
     outputGainSlider.setBounds(sliderArea.removeFromLeft(sliderWidth));
 
     auto buttonArea = area.removeFromTop(30);

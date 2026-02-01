@@ -63,6 +63,8 @@ target_sources(16Second
     Source/dsp/FeedbackModel.h
     Source/dsp/Limiter.cpp
     Source/dsp/Limiter.h
+    Source/dsp/LFO.cpp
+    Source/dsp/LFO.h
 )
 
 target_compile_definitions(16Second

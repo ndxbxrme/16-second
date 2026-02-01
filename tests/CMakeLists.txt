@@ -9,6 +9,7 @@ add_executable(${TEST_TARGET}
   test_smoother.cpp
   test_feedback_model.cpp
   test_limiter.cpp
+  test_lfo.cpp
   ${CMAKE_SOURCE_DIR}/Source/dsp/MemoryBuffer.cpp
   ${CMAKE_SOURCE_DIR}/Source/dsp/StateMachine.cpp
   ${CMAKE_SOURCE_DIR}/Source/dsp/Overdub.cpp
@@ -16,6 +17,7 @@ add_executable(${TEST_TARGET}
   ${CMAKE_SOURCE_DIR}/Source/dsp/Smoother.cpp
   ${CMAKE_SOURCE_DIR}/Source/dsp/FeedbackModel.cpp
   ${CMAKE_SOURCE_DIR}/Source/dsp/Limiter.cpp
+  ${CMAKE_SOURCE_DIR}/Source/dsp/LFO.cpp
 )
 
 target_link_libraries(${TEST_TARGET}

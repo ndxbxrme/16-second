@@ -18,3 +18,4 @@
 - Added lossy feedback model with filter + noise/grit and feedback degradation on overdub.
 - Added FeedbackModel tests.
 - Added output limiter with UI toggle and tests.
+- Added modulation LFO with Mod Depth/Speed and tests.

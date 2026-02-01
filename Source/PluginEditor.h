@@ -45,6 +45,14 @@ private:
     juce::Label noiseLabel;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> noiseAttachment;
 
+    juce::Slider modDepthSlider;
+    juce::Label modDepthLabel;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> modDepthAttachment;
+
+    juce::Slider modSpeedSlider;
+    juce::Label modSpeedLabel;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> modSpeedAttachment;
+
     juce::Slider outputGainSlider;
     juce::Label outputGainLabel;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> outputGainAttachment;
