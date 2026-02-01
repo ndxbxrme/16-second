@@ -1,6 +1,8 @@
 # 16-Second (VST3)
 [![CI](https://github.com/ndxbxrme/16-second/actions/workflows/ci.yml/badge.svg)](https://github.com/ndxbxrme/16-second/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/ndxbxrme/16-second?include_prereleases=true)](https://github.com/ndxbxrme/16-second/releases)
+[![Release](https://img.shields.io/github/v/release/ndxbxrme/16-second)](https://github.com/ndxbxrme/16-second/releases)
+
+![UI Screenshot](docs/Screenshot.png)
 
 Experimental VST3 inspired by the Electro-Harmonix 16-Second Digital Delay. The focus is on the behavioral feel (unsafe time changes, destructive overdub, evolving feedback), not a circuit-perfect emulation.
 
