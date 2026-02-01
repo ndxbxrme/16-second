@@ -2,8 +2,14 @@
 
 namespace
 {
-    constexpr int kSliderWidth = 90;
+    constexpr int kSliderWidth = 80;
     constexpr int kSliderHeight = 170;
+    constexpr int kSliderGap = 6;
+    constexpr int kSliderCount = 10;
+    constexpr int kLeftColumnWidth = 210;
+    constexpr int kMeterWidth = 70;
+    constexpr int kMargin = 16;
+    constexpr int kHeaderHeight = 48;
 
     void configureSlider(juce::Slider& slider)
     {
@@ -161,7 +167,9 @@ SixteenSecondAudioProcessorEditor::SixteenSecondAudioProcessorEditor(SixteenSeco
     limiterAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
         processor.getAPVTS(), "limiter", limiterButton);
 
-    setSize(1220, 360);
+    const int totalSliderWidth = kSliderWidth * kSliderCount + kSliderGap * (kSliderCount - 1);
+    const int totalWidth = kLeftColumnWidth + totalSliderWidth + kMeterWidth + kMargin * 2;
+    setSize(totalWidth, 360);
     startTimerHz(30);
 }
 
@@ -228,16 +236,17 @@ void SixteenSecondAudioProcessorEditor::paint(juce::Graphics& g)
 
 void SixteenSecondAudioProcessorEditor::resized()
 {
-    auto area = getLocalBounds().reduced(16);
-    area.removeFromTop(48);
+    auto area = getLocalBounds().reduced(kMargin);
+    area.removeFromTop(kHeaderHeight);
 
-    auto leftColumn = area.removeFromLeft(240);
-    auto sliderArea = area.removeFromTop(kSliderHeight);
+    auto leftColumn = area.removeFromLeft(kLeftColumnWidth);
+    auto topRow = area.removeFromTop(kSliderHeight);
+    auto sliderArea = topRow.removeFromLeft(kSliderWidth * kSliderCount + kSliderGap * (kSliderCount - 1));
 
     auto addSlider = [&](juce::Component& slider)
     {
         slider.setBounds(sliderArea.removeFromLeft(kSliderWidth).withTrimmedTop(8));
-        sliderArea.removeFromLeft(10);
+        sliderArea.removeFromLeft(kSliderGap);
     };
 
     addSlider(delayTimeSlider);
@@ -270,7 +279,7 @@ void SixteenSecondAudioProcessorEditor::resized()
     ledArea.removeFromLeft(8);
     overdubLedArea = ledArea.removeFromLeft(20);
 
-    meterArea = area.removeFromRight(80).withTrimmedTop(10).withTrimmedBottom(10);
+    meterArea = topRow.removeFromLeft(kMeterWidth).withTrimmedTop(10).withTrimmedBottom(10);
     const auto led = meterArea.removeFromTop(16);
     clipLedArea = led.withSizeKeepingCentre(12, 12);
 }
