@@ -66,7 +66,7 @@ jobs:
           path: dist/16-Second-windows-vst3.zip
 
   build-macos:
-    runs-on: macos-latest
+    runs-on: macos-14
     steps:
       - name: Checkout
         uses: actions/checkout@v4
