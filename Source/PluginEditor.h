@@ -76,9 +76,15 @@ private:
 
     juce::Rectangle<int> meterArea;
     juce::Rectangle<int> clipLedArea;
+    juce::Rectangle<int> recLedArea;
+    juce::Rectangle<int> playLedArea;
+    juce::Rectangle<int> overdubLedArea;
     float meterL = 0.0f;
     float meterR = 0.0f;
     bool clipOn = false;
+    bool recOn = false;
+    bool playOn = false;
+    bool overdubOn = false;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SixteenSecondAudioProcessorEditor)
 };

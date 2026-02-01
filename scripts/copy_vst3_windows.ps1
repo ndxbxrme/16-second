@@ -5,7 +5,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$source = Join-Path $BuildDir "16Second_artefacts\VST3\16-Second.vst3"
+$source = Join-Path $BuildDir "16Second_artefacts\Release\VST3\16-Second.vst3"
 if (-not (Test-Path $source)) {
   Write-Error "VST3 bundle not found at: $source"
 }

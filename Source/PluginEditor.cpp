@@ -1,10 +1,21 @@
 #include "PluginEditor.h"
 
+namespace
+{
+    constexpr int kSliderWidth = 90;
+    constexpr int kSliderHeight = 170;
+
+    void configureSlider(juce::Slider& slider)
+    {
+        slider.setSliderStyle(juce::Slider::LinearVertical);
+        slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 70, 18);
+    }
+}
+
 SixteenSecondAudioProcessorEditor::SixteenSecondAudioProcessorEditor(SixteenSecondAudioProcessor& p)
     : AudioProcessorEditor(&p), processor(p)
 {
-    delayTimeSlider.setSliderStyle(juce::Slider::LinearVertical);
-    delayTimeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    configureSlider(delayTimeSlider);
     delayTimeSlider.setRange(0.0, 16000.0, 1.0);
     delayTimeLabel.setText("Delay", juce::dontSendNotification);
     delayTimeLabel.setJustificationType(juce::Justification::centred);
@@ -14,8 +25,7 @@ SixteenSecondAudioProcessorEditor::SixteenSecondAudioProcessorEditor(SixteenSeco
     delayTimeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         processor.getAPVTS(), "delayTime", delayTimeSlider);
 
-    feedbackSlider.setSliderStyle(juce::Slider::LinearVertical);
-    feedbackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    configureSlider(feedbackSlider);
     feedbackSlider.setRange(0.0, 1.2, 0.001);
     feedbackLabel.setText("Feedback", juce::dontSendNotification);
     feedbackLabel.setJustificationType(juce::Justification::centred);
@@ -25,8 +35,7 @@ SixteenSecondAudioProcessorEditor::SixteenSecondAudioProcessorEditor(SixteenSeco
     feedbackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         processor.getAPVTS(), "feedback", feedbackSlider);
 
-    mixSlider.setSliderStyle(juce::Slider::LinearVertical);
-    mixSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    configureSlider(mixSlider);
     mixSlider.setRange(0.0, 1.0, 0.001);
     mixLabel.setText("Mix", juce::dontSendNotification);
     mixLabel.setJustificationType(juce::Justification::centred);
@@ -36,8 +45,7 @@ SixteenSecondAudioProcessorEditor::SixteenSecondAudioProcessorEditor(SixteenSeco
     mixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         processor.getAPVTS(), "mix", mixSlider);
 
-    overdubLevelSlider.setSliderStyle(juce::Slider::LinearVertical);
-    overdubLevelSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    configureSlider(overdubLevelSlider);
     overdubLevelSlider.setRange(0.0, 1.0, 0.001);
     overdubLevelLabel.setText("Overdub", juce::dontSendNotification);
     overdubLevelLabel.setJustificationType(juce::Justification::centred);
@@ -47,8 +55,7 @@ SixteenSecondAudioProcessorEditor::SixteenSecondAudioProcessorEditor(SixteenSeco
     overdubLevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         processor.getAPVTS(), "overdubLevel", overdubLevelSlider);
 
-    erodeAmountSlider.setSliderStyle(juce::Slider::LinearVertical);
-    erodeAmountSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    configureSlider(erodeAmountSlider);
     erodeAmountSlider.setRange(0.0, 1.0, 0.001);
     erodeAmountLabel.setText("Erode", juce::dontSendNotification);
     erodeAmountLabel.setJustificationType(juce::Justification::centred);
@@ -58,8 +65,7 @@ SixteenSecondAudioProcessorEditor::SixteenSecondAudioProcessorEditor(SixteenSeco
     erodeAmountAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         processor.getAPVTS(), "erodeAmount", erodeAmountSlider);
 
-    filterSlider.setSliderStyle(juce::Slider::LinearVertical);
-    filterSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    configureSlider(filterSlider);
     filterSlider.setRange(0.0, 1.0, 0.001);
     filterLabel.setText("Filter", juce::dontSendNotification);
     filterLabel.setJustificationType(juce::Justification::centred);
@@ -69,8 +75,7 @@ SixteenSecondAudioProcessorEditor::SixteenSecondAudioProcessorEditor(SixteenSeco
     filterAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         processor.getAPVTS(), "filter", filterSlider);
 
-    noiseSlider.setSliderStyle(juce::Slider::LinearVertical);
-    noiseSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    configureSlider(noiseSlider);
     noiseSlider.setRange(0.0, 1.0, 0.001);
     noiseLabel.setText("Noise", juce::dontSendNotification);
     noiseLabel.setJustificationType(juce::Justification::centred);
@@ -80,8 +85,7 @@ SixteenSecondAudioProcessorEditor::SixteenSecondAudioProcessorEditor(SixteenSeco
     noiseAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         processor.getAPVTS(), "noise", noiseSlider);
 
-    modDepthSlider.setSliderStyle(juce::Slider::LinearVertical);
-    modDepthSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    configureSlider(modDepthSlider);
     modDepthSlider.setRange(0.0, 1.0, 0.001);
     modDepthLabel.setText("Mod Depth", juce::dontSendNotification);
     modDepthLabel.setJustificationType(juce::Justification::centred);
@@ -91,8 +95,7 @@ SixteenSecondAudioProcessorEditor::SixteenSecondAudioProcessorEditor(SixteenSeco
     modDepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         processor.getAPVTS(), "modDepth", modDepthSlider);
 
-    modSpeedSlider.setSliderStyle(juce::Slider::LinearVertical);
-    modSpeedSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    configureSlider(modSpeedSlider);
     modSpeedSlider.setRange(0.0, 1.0, 0.001);
     modSpeedLabel.setText("Mod Speed", juce::dontSendNotification);
     modSpeedLabel.setJustificationType(juce::Justification::centred);
@@ -102,8 +105,7 @@ SixteenSecondAudioProcessorEditor::SixteenSecondAudioProcessorEditor(SixteenSeco
     modSpeedAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         processor.getAPVTS(), "modSpeed", modSpeedSlider);
 
-    outputGainSlider.setSliderStyle(juce::Slider::LinearVertical);
-    outputGainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    configureSlider(outputGainSlider);
     outputGainSlider.setRange(-24.0, 12.0, 0.01);
 
     outputGainLabel.setText("Output", juce::dontSendNotification);
@@ -159,7 +161,7 @@ SixteenSecondAudioProcessorEditor::SixteenSecondAudioProcessorEditor(SixteenSeco
     limiterAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
         processor.getAPVTS(), "limiter", limiterButton);
 
-    setSize(1480, 280);
+    setSize(1220, 360);
     startTimerHz(30);
 }
 
@@ -167,66 +169,106 @@ SixteenSecondAudioProcessorEditor::~SixteenSecondAudioProcessorEditor() = defaul
 
 void SixteenSecondAudioProcessorEditor::paint(juce::Graphics& g)
 {
-    g.fillAll(juce::Colours::black);
-    g.setColour(juce::Colours::white);
-    g.setFont(16.0f);
-    g.drawFittedText("16-Second (Milestone 7)", getLocalBounds().removeFromTop(30),
-                    juce::Justification::centred, 1);
+    const auto bounds = getLocalBounds();
+    juce::Colour base = juce::Colour::fromRGB(18, 18, 20);
+    juce::Colour panel = juce::Colour::fromRGB(32, 32, 36);
+    juce::Colour accent = juce::Colour::fromRGB(231, 168, 74);
+    juce::Colour text = juce::Colour::fromRGB(228, 228, 228);
 
-    g.setColour(juce::Colours::darkgrey);
-    g.fillRect(meterArea);
+    g.fillAll(base);
 
-    const auto meterHeight = meterArea.getHeight();
-    const auto meterWidth = meterArea.getWidth() / 2 - 4;
+    auto header = bounds.removeFromTop(48);
+    g.setColour(panel);
+    g.fillRect(header);
+
+    g.setColour(accent);
+    g.setFont(juce::Font("Georgia", 20.0f, juce::Font::bold));
+    g.drawText("16-Second", header.removeFromLeft(200), juce::Justification::centredLeft);
+
+    g.setColour(text);
+    g.setFont(juce::Font("Georgia", 12.0f, juce::Font::italic));
+    g.drawText("unsafe digital delay/looper", header.removeFromLeft(220), juce::Justification::centredLeft);
+
+    g.setColour(panel);
+    g.fillRoundedRectangle(meterArea.toFloat(), 6.0f);
+
+    const auto meterHeight = meterArea.getHeight() - 8;
+    const auto meterWidth = meterArea.getWidth() / 2 - 10;
+    const auto baseY = meterArea.getBottom() - 4;
 
     const auto filledL = static_cast<int>(meterHeight * juce::jlimit(0.0f, 1.0f, meterL));
     const auto filledR = static_cast<int>(meterHeight * juce::jlimit(0.0f, 1.0f, meterR));
 
-    const auto leftMeter = juce::Rectangle<int>(meterArea.getX() + 4,
-                                                meterArea.getBottom() - filledL,
+    const auto leftMeter = juce::Rectangle<int>(meterArea.getX() + 6,
+                                                baseY - filledL,
                                                 meterWidth,
                                                 filledL);
-    const auto rightMeter = juce::Rectangle<int>(meterArea.getX() + meterWidth + 8,
-                                                 meterArea.getBottom() - filledR,
+    const auto rightMeter = juce::Rectangle<int>(meterArea.getX() + meterWidth + 14,
+                                                 baseY - filledR,
                                                  meterWidth,
                                                  filledR);
 
-    g.setColour(juce::Colours::limegreen);
+    g.setColour(juce::Colour::fromRGB(82, 214, 125));
     g.fillRect(leftMeter);
     g.fillRect(rightMeter);
 
-    g.setColour(clipOn ? juce::Colours::red : juce::Colours::darkred);
+    g.setColour(clipOn ? juce::Colours::red : juce::Colour::fromRGB(80, 20, 20));
     g.fillEllipse(clipLedArea.toFloat());
+
+    auto drawLed = [&](const juce::Rectangle<int>& area, juce::Colour onColour, bool isOn)
+    {
+        g.setColour(isOn ? onColour : onColour.darker(0.6f));
+        g.fillEllipse(area.toFloat());
+    };
+
+    drawLed(recLedArea, juce::Colour::fromRGB(220, 60, 60), recOn);
+    drawLed(playLedArea, juce::Colour::fromRGB(60, 220, 120), playOn);
+    drawLed(overdubLedArea, juce::Colour::fromRGB(230, 170, 50), overdubOn);
 }
 
 void SixteenSecondAudioProcessorEditor::resized()
 {
-    auto area = getLocalBounds().reduced(20);
-    area.removeFromTop(40);
+    auto area = getLocalBounds().reduced(16);
+    area.removeFromTop(48);
 
-    auto sliderArea = area.removeFromTop(180);
-    const auto sliderWidth = 100;
+    auto leftColumn = area.removeFromLeft(240);
+    auto sliderArea = area.removeFromTop(kSliderHeight);
 
-    delayTimeSlider.setBounds(sliderArea.removeFromLeft(sliderWidth));
-    feedbackSlider.setBounds(sliderArea.removeFromLeft(sliderWidth));
-    mixSlider.setBounds(sliderArea.removeFromLeft(sliderWidth));
-    overdubLevelSlider.setBounds(sliderArea.removeFromLeft(sliderWidth));
-    erodeAmountSlider.setBounds(sliderArea.removeFromLeft(sliderWidth));
-    filterSlider.setBounds(sliderArea.removeFromLeft(sliderWidth));
-    noiseSlider.setBounds(sliderArea.removeFromLeft(sliderWidth));
-    modDepthSlider.setBounds(sliderArea.removeFromLeft(sliderWidth));
-    modSpeedSlider.setBounds(sliderArea.removeFromLeft(sliderWidth));
-    outputGainSlider.setBounds(sliderArea.removeFromLeft(sliderWidth));
+    auto addSlider = [&](juce::Component& slider)
+    {
+        slider.setBounds(sliderArea.removeFromLeft(kSliderWidth).withTrimmedTop(8));
+        sliderArea.removeFromLeft(10);
+    };
 
-    auto buttonArea = area.removeFromTop(30);
-    recordButton.setBounds(buttonArea.removeFromLeft(120));
-    playButton.setBounds(buttonArea.removeFromLeft(120));
-    overdubButton.setBounds(buttonArea.removeFromLeft(120));
-    clearButton.setBounds(buttonArea.removeFromLeft(120));
-    halfSpeedButton.setBounds(buttonArea.removeFromLeft(120));
-    reverseButton.setBounds(buttonArea.removeFromLeft(120));
-    authenticButton.setBounds(buttonArea.removeFromLeft(140));
-    limiterButton.setBounds(buttonArea.removeFromLeft(120));
+    addSlider(delayTimeSlider);
+    addSlider(feedbackSlider);
+    addSlider(mixSlider);
+    addSlider(modDepthSlider);
+    addSlider(modSpeedSlider);
+    addSlider(filterSlider);
+    addSlider(noiseSlider);
+    addSlider(overdubLevelSlider);
+    addSlider(erodeAmountSlider);
+    addSlider(outputGainSlider);
+
+    auto buttonArea = leftColumn.removeFromTop(200);
+    recordButton.setBounds(buttonArea.removeFromTop(32).reduced(8, 2));
+    playButton.setBounds(buttonArea.removeFromTop(32).reduced(8, 2));
+    overdubButton.setBounds(buttonArea.removeFromTop(32).reduced(8, 2));
+    clearButton.setBounds(buttonArea.removeFromTop(32).reduced(8, 2));
+
+    auto modeArea = leftColumn.removeFromTop(130);
+    halfSpeedButton.setBounds(modeArea.removeFromTop(28).reduced(8, 2));
+    reverseButton.setBounds(modeArea.removeFromTop(28).reduced(8, 2));
+    authenticButton.setBounds(modeArea.removeFromTop(28).reduced(8, 2));
+    limiterButton.setBounds(modeArea.removeFromTop(28).reduced(8, 2));
+
+    auto ledArea = leftColumn.removeFromTop(32).reduced(8, 6);
+    recLedArea = ledArea.removeFromLeft(20);
+    ledArea.removeFromLeft(8);
+    playLedArea = ledArea.removeFromLeft(20);
+    ledArea.removeFromLeft(8);
+    overdubLedArea = ledArea.removeFromLeft(20);
 
     meterArea = area.removeFromRight(80).withTrimmedTop(10).withTrimmedBottom(10);
     const auto led = meterArea.removeFromTop(16);
@@ -238,5 +280,8 @@ void SixteenSecondAudioProcessorEditor::timerCallback()
     meterL = processor.getMeterL();
     meterR = processor.getMeterR();
     clipOn = processor.getClip();
+    recOn = processor.getAPVTS().getRawParameterValue("record")->load() > 0.5f;
+    playOn = processor.getAPVTS().getRawParameterValue("play")->load() > 0.5f;
+    overdubOn = processor.getAPVTS().getRawParameterValue("overdub")->load() > 0.5f;
     repaint();
 }
