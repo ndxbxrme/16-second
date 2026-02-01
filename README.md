@@ -1,6 +1,6 @@
 # 16-Second (VST3)
 [![CI](https://github.com/ndxbxrme/16-second/actions/workflows/ci.yml/badge.svg)](https://github.com/ndxbxrme/16-second/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/ndxbxrme/16-second)](https://github.com/ndxbxrme/16-second/releases)
+[![Release](https://img.shields.io/github/v/tag/ndxbxrme/16-second)](https://github.com/ndxbxrme/16-second/releases)
 
 ![UI Screenshot](docs/Screenshot.png)
 
