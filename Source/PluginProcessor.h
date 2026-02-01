@@ -7,6 +7,10 @@
 #include "dsp/RateStepper.h"
 #include "dsp/StateMachine.h"
 #include "dsp/Smoother.h"
+#include "dsp/FeedbackModel.h"
+#include "dsp/Limiter.h"
+#include <cstdint>
+#include <atomic>
 
 class SixteenSecondAudioProcessor final : public juce::AudioProcessor
 {
@@ -52,11 +56,16 @@ private:
     void processBlockInternal(juce::AudioBuffer<SampleType>& buffer);
 
     void resetLoopState();
+    float generateNoise();
+    void updateMeters(const juce::AudioBuffer<float>& buffer);
 
     MemoryBuffer memoryBuffer;
     StateMachine stateMachine;
     RateStepper loopStepper;
     Smoother delaySmoother;
+    FeedbackModel feedbackModel;
+    Limiter limiterL;
+    Limiter limiterR;
     juce::AudioBuffer<float> tempFloatBuffer;
 
     int maxBufferSamples = 0;
@@ -66,6 +75,18 @@ private:
     int recordedSamples = 0;
     LoopState currentState = LoopState::Idle;
     bool lastClear = false;
+    std::uint32_t noiseSeed = 0x1234567u;
+
+public:
+    float getMeterL() const { return meterL.load(); }
+    float getMeterR() const { return meterR.load(); }
+    bool getClip() const { return clipFlag.load(); }
+
+private:
+    std::atomic<float> meterL { 0.0f };
+    std::atomic<float> meterR { 0.0f };
+    std::atomic<bool> clipFlag { false };
+    std::atomic<int> clipHold { 0 };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SixteenSecondAudioProcessor)
 };

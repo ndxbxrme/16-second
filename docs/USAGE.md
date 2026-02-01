@@ -1,6 +1,6 @@
 # 16-Second — Usage (Early Scaffold)
 
-## Current state (Milestone 5)
+## Current state (Milestone 6)
 - Basic delay line with Delay Time, Feedback, Mix, and Output Gain.
 - Record/Play/Overdub state machine with destructive overdub and erosion.
 
@@ -18,6 +18,9 @@
 - Half-speed: plays loop at half speed (lower pitch, longer duration).
 - Reverse: plays loop backwards.
 - Authentic: toggles unsafe delay time behavior (abrupt pointer jumps).
+- Filter: darkens feedback and loop writes.
+- Noise/Grit: adds noise + bit reduction in the feedback loop.
+- Limiter: safety limiter at output (on by default).
 
 ## Notes
 - Loop capture is intentionally minimal and will be refined in later milestones.

@@ -59,6 +59,10 @@ target_sources(16Second
     Source/dsp/RateStepper.h
     Source/dsp/Smoother.cpp
     Source/dsp/Smoother.h
+    Source/dsp/FeedbackModel.cpp
+    Source/dsp/FeedbackModel.h
+    Source/dsp/Limiter.cpp
+    Source/dsp/Limiter.h
 )
 
 target_compile_definitions(16Second

@@ -58,6 +58,28 @@ SixteenSecondAudioProcessorEditor::SixteenSecondAudioProcessorEditor(SixteenSeco
     erodeAmountAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         processor.getAPVTS(), "erodeAmount", erodeAmountSlider);
 
+    filterSlider.setSliderStyle(juce::Slider::LinearVertical);
+    filterSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    filterSlider.setRange(0.0, 1.0, 0.001);
+    filterLabel.setText("Filter", juce::dontSendNotification);
+    filterLabel.setJustificationType(juce::Justification::centred);
+    filterLabel.attachToComponent(&filterSlider, false);
+    addAndMakeVisible(filterSlider);
+    addAndMakeVisible(filterLabel);
+    filterAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        processor.getAPVTS(), "filter", filterSlider);
+
+    noiseSlider.setSliderStyle(juce::Slider::LinearVertical);
+    noiseSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    noiseSlider.setRange(0.0, 1.0, 0.001);
+    noiseLabel.setText("Noise", juce::dontSendNotification);
+    noiseLabel.setJustificationType(juce::Justification::centred);
+    noiseLabel.attachToComponent(&noiseSlider, false);
+    addAndMakeVisible(noiseSlider);
+    addAndMakeVisible(noiseLabel);
+    noiseAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        processor.getAPVTS(), "noise", noiseSlider);
+
     outputGainSlider.setSliderStyle(juce::Slider::LinearVertical);
     outputGainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
     outputGainSlider.setRange(-24.0, 12.0, 0.01);
@@ -109,7 +131,14 @@ SixteenSecondAudioProcessorEditor::SixteenSecondAudioProcessorEditor(SixteenSeco
     authenticAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
         processor.getAPVTS(), "authentic", authenticButton);
 
-    setSize(960, 280);
+    limiterButton.setButtonText("Limiter");
+    addAndMakeVisible(limiterButton);
+
+    limiterAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
+        processor.getAPVTS(), "limiter", limiterButton);
+
+    setSize(1280, 280);
+    startTimerHz(30);
 }
 
 SixteenSecondAudioProcessorEditor::~SixteenSecondAudioProcessorEditor() = default;
@@ -119,8 +148,33 @@ void SixteenSecondAudioProcessorEditor::paint(juce::Graphics& g)
     g.fillAll(juce::Colours::black);
     g.setColour(juce::Colours::white);
     g.setFont(16.0f);
-    g.drawFittedText("16-Second (Milestone 5)", getLocalBounds().removeFromTop(30),
+    g.drawFittedText("16-Second (Milestone 6+Limiter)", getLocalBounds().removeFromTop(30),
                     juce::Justification::centred, 1);
+
+    g.setColour(juce::Colours::darkgrey);
+    g.fillRect(meterArea);
+
+    const auto meterHeight = meterArea.getHeight();
+    const auto meterWidth = meterArea.getWidth() / 2 - 4;
+
+    const auto filledL = static_cast<int>(meterHeight * juce::jlimit(0.0f, 1.0f, meterL));
+    const auto filledR = static_cast<int>(meterHeight * juce::jlimit(0.0f, 1.0f, meterR));
+
+    const auto leftMeter = juce::Rectangle<int>(meterArea.getX() + 4,
+                                                meterArea.getBottom() - filledL,
+                                                meterWidth,
+                                                filledL);
+    const auto rightMeter = juce::Rectangle<int>(meterArea.getX() + meterWidth + 8,
+                                                 meterArea.getBottom() - filledR,
+                                                 meterWidth,
+                                                 filledR);
+
+    g.setColour(juce::Colours::limegreen);
+    g.fillRect(leftMeter);
+    g.fillRect(rightMeter);
+
+    g.setColour(clipOn ? juce::Colours::red : juce::Colours::darkred);
+    g.fillEllipse(clipLedArea.toFloat());
 }
 
 void SixteenSecondAudioProcessorEditor::resized()
@@ -136,6 +190,8 @@ void SixteenSecondAudioProcessorEditor::resized()
     mixSlider.setBounds(sliderArea.removeFromLeft(sliderWidth));
     overdubLevelSlider.setBounds(sliderArea.removeFromLeft(sliderWidth));
     erodeAmountSlider.setBounds(sliderArea.removeFromLeft(sliderWidth));
+    filterSlider.setBounds(sliderArea.removeFromLeft(sliderWidth));
+    noiseSlider.setBounds(sliderArea.removeFromLeft(sliderWidth));
     outputGainSlider.setBounds(sliderArea.removeFromLeft(sliderWidth));
 
     auto buttonArea = area.removeFromTop(30);
@@ -146,4 +202,17 @@ void SixteenSecondAudioProcessorEditor::resized()
     halfSpeedButton.setBounds(buttonArea.removeFromLeft(120));
     reverseButton.setBounds(buttonArea.removeFromLeft(120));
     authenticButton.setBounds(buttonArea.removeFromLeft(140));
+    limiterButton.setBounds(buttonArea.removeFromLeft(120));
+
+    meterArea = area.removeFromRight(80).withTrimmedTop(10).withTrimmedBottom(10);
+    const auto led = meterArea.removeFromTop(16);
+    clipLedArea = led.withSizeKeepingCentre(12, 12);
+}
+
+void SixteenSecondAudioProcessorEditor::timerCallback()
+{
+    meterL = processor.getMeterL();
+    meterR = processor.getMeterR();
+    clipOn = processor.getClip();
+    repaint();
 }

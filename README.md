@@ -4,7 +4,7 @@
 Experimental VST3 inspired by the Electro-Harmonix 16-Second Digital Delay. The focus is on the behavioral feel (unsafe time changes, destructive overdub, evolving feedback), not a circuit-perfect emulation.
 
 ## Status
-- Milestone 5: delay/loop engine with record/play/overdub, half-speed + reverse, and AUTHENTIC vs SAFE-ish delay-time behavior.
+- Milestone 6: added lossy feedback model (filter + noise/grit) and feedback degradation on overdub.
 
 ## Build (Linux/WSL)
 Dependencies (Ubuntu/Debian):

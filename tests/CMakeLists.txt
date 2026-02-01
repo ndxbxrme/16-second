@@ -7,11 +7,15 @@ add_executable(${TEST_TARGET}
   test_overdub.cpp
   test_rate_stepper.cpp
   test_smoother.cpp
+  test_feedback_model.cpp
+  test_limiter.cpp
   ${CMAKE_SOURCE_DIR}/Source/dsp/MemoryBuffer.cpp
   ${CMAKE_SOURCE_DIR}/Source/dsp/StateMachine.cpp
   ${CMAKE_SOURCE_DIR}/Source/dsp/Overdub.cpp
   ${CMAKE_SOURCE_DIR}/Source/dsp/RateStepper.cpp
   ${CMAKE_SOURCE_DIR}/Source/dsp/Smoother.cpp
+  ${CMAKE_SOURCE_DIR}/Source/dsp/FeedbackModel.cpp
+  ${CMAKE_SOURCE_DIR}/Source/dsp/Limiter.cpp
 )
 
 target_link_libraries(${TEST_TARGET}

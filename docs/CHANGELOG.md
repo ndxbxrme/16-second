@@ -15,3 +15,6 @@
 - Added RateStepper tests.
 - Added SAFE-ish delay-time smoothing with linear interpolation and AUTHENTIC toggle.
 - Added Smoother tests.
+- Added lossy feedback model with filter + noise/grit and feedback degradation on overdub.
+- Added FeedbackModel tests.
+- Added output limiter with UI toggle and tests.

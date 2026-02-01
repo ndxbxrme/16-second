@@ -68,6 +68,9 @@ void SixteenSecondAudioProcessor::prepareToPlay(double sampleRate, int samplesPe
     memoryBuffer.prepare(getTotalNumInputChannels(), maxBufferSamples);
     tempFloatBuffer.setSize(getTotalNumInputChannels(), samplesPerBlock);
     delaySmoother.reset(sampleRate, 0.0f, 10.0f);
+    feedbackModel.reset(sampleRate);
+    limiterL.reset(sampleRate);
+    limiterR.reset(sampleRate);
     resetLoopState();
 }
 
@@ -96,7 +99,10 @@ void SixteenSecondAudioProcessor::processBlockInternal(juce::AudioBuffer<SampleT
     const auto mix = apvts.getRawParameterValue("mix")->load();
     const auto overdubLevel = apvts.getRawParameterValue("overdubLevel")->load();
     const auto erodeAmount = apvts.getRawParameterValue("erodeAmount")->load();
+    const auto filterAmount = apvts.getRawParameterValue("filter")->load();
+    const auto noiseAmount = apvts.getRawParameterValue("noise")->load();
     const auto gainDb = apvts.getRawParameterValue("outputGain")->load();
+    const auto limiterOn = apvts.getRawParameterValue("limiter")->load() > 0.5f;
     const auto gain = juce::Decibels::decibelsToGain(static_cast<SampleType>(gainDb));
     const auto isRecording = apvts.getRawParameterValue("record")->load() > 0.5f;
     const auto isPlaying = apvts.getRawParameterValue("play")->load() > 0.5f;
@@ -127,6 +133,9 @@ void SixteenSecondAudioProcessor::processBlockInternal(juce::AudioBuffer<SampleT
     const auto mixClamped = juce::jlimit(0.0f, 1.0f, mix);
     const auto dryGain = std::cos(mixClamped * juce::MathConstants<float>::halfPi);
     const auto wetGain = std::sin(mixClamped * juce::MathConstants<float>::halfPi);
+
+    limiterL.setThreshold(0.98f);
+    limiterR.setThreshold(0.98f);
 
     const auto clearEdge = isClear && !lastClear;
     lastClear = isClear;
@@ -166,8 +175,16 @@ void SixteenSecondAudioProcessor::processBlockInternal(juce::AudioBuffer<SampleT
             for (int channel = 0; channel < numChannels; ++channel)
             {
                 const auto input = buffer.getSample(channel, i);
-                memoryBuffer.writeSample(channel, memoryBuffer.getWriteIndex(), static_cast<float>(input));
-                buffer.setSample(channel, i, static_cast<SampleType>(input * gain));
+                const auto degraded = feedbackModel.process(static_cast<float>(input),
+                                                            filterAmount,
+                                                            noiseAmount,
+                                                            1.0f,
+                                                            generateNoise());
+                memoryBuffer.writeSample(channel, memoryBuffer.getWriteIndex(), degraded);
+                auto output = static_cast<float>(input * gain);
+                if (limiterOn)
+                    output = (channel == 0) ? limiterL.process(output) : limiterR.process(output);
+                buffer.setSample(channel, i, static_cast<SampleType>(output));
             }
 
             memoryBuffer.advanceWrite();
@@ -193,18 +210,26 @@ void SixteenSecondAudioProcessor::processBlockInternal(juce::AudioBuffer<SampleT
                 const auto input = buffer.getSample(channel, i);
                 const auto readSample = memoryBuffer.readSample(channel, readIndex);
                 const auto mixed = static_cast<SampleType>(input * dryGain + readSample * wetGain);
-                buffer.setSample(channel, i, mixed * gain);
+                auto output = static_cast<float>(mixed * gain);
+                if (limiterOn)
+                    output = (channel == 0) ? limiterL.process(output) : limiterR.process(output);
+                buffer.setSample(channel, i, static_cast<SampleType>(output));
 
                 if (currentState == LoopState::Overdub)
                 {
                     const auto existing = readSample;
-                    const auto writeValue = Overdub::apply(existing,
-                                                           static_cast<float>(input),
-                                                           readSample,
-                                                           overdubLevel,
-                                                           feedback,
-                                                           erodeAmount);
-                    memoryBuffer.writeSample(channel, readIndex, writeValue);
+                    const auto overdubWrite = Overdub::apply(existing,
+                                                             static_cast<float>(input),
+                                                             readSample,
+                                                             overdubLevel,
+                                                             feedback,
+                                                             erodeAmount);
+                    const auto degraded = feedbackModel.process(overdubWrite,
+                                                                filterAmount,
+                                                                noiseAmount,
+                                                                1.0f,
+                                                                generateNoise());
+                    memoryBuffer.writeSample(channel, readIndex, degraded);
                 }
             }
 
@@ -226,10 +251,18 @@ void SixteenSecondAudioProcessor::processBlockInternal(juce::AudioBuffer<SampleT
             const auto input = buffer.getSample(channel, i);
             const auto readSample = isAuthentic ? memoryBuffer.readSample(channel, static_cast<int>(readIndex))
                                                  : memoryBuffer.readSampleLinear(channel, readIndex);
-            const auto writeValue = static_cast<float>(input + readSample * feedback);
+            const auto feedbackSignal = feedbackModel.process(readSample,
+                                                              filterAmount,
+                                                              noiseAmount,
+                                                              feedback,
+                                                              generateNoise());
+            const auto writeValue = static_cast<float>(input + feedbackSignal);
             memoryBuffer.writeSample(channel, writeIndex, writeValue);
             const auto mixed = static_cast<SampleType>(input * dryGain + readSample * wetGain);
-            buffer.setSample(channel, i, mixed * gain);
+            auto output = static_cast<float>(mixed * gain);
+            if (limiterOn)
+                output = (channel == 0) ? limiterL.process(output) : limiterR.process(output);
+            buffer.setSample(channel, i, static_cast<SampleType>(output));
         }
 
         memoryBuffer.advanceWrite();
@@ -240,6 +273,7 @@ void SixteenSecondAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
 {
     juce::ScopedNoDenormals noDenormals;
     processBlockInternal(buffer);
+    updateMeters(buffer);
 }
 
 void SixteenSecondAudioProcessor::processBlock(juce::AudioBuffer<double>& buffer, juce::MidiBuffer&)
@@ -258,12 +292,59 @@ void SixteenSecondAudioProcessor::processBlock(juce::AudioBuffer<double>& buffer
 
     processBlockInternal(tempFloatBuffer);
 
+    updateMeters(tempFloatBuffer);
+
     for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
     {
         auto* src = tempFloatBuffer.getReadPointer(channel);
         auto* dst = buffer.getWritePointer(channel);
         for (int i = 0; i < buffer.getNumSamples(); ++i)
             dst[i] = static_cast<double>(src[i]);
+    }
+}
+
+void SixteenSecondAudioProcessor::updateMeters(const juce::AudioBuffer<float>& buffer)
+{
+    const auto numChannels = buffer.getNumChannels();
+    const auto numSamples = buffer.getNumSamples();
+    const auto holdSamples = static_cast<int>(getSampleRate() * 0.5);
+
+    float peakL = 0.0f;
+    float peakR = 0.0f;
+
+    if (numChannels > 0)
+    {
+        const auto* dataL = buffer.getReadPointer(0);
+        for (int i = 0; i < numSamples; ++i)
+            peakL = std::max(peakL, std::abs(dataL[i]));
+    }
+
+    if (numChannels > 1)
+    {
+        const auto* dataR = buffer.getReadPointer(1);
+        for (int i = 0; i < numSamples; ++i)
+            peakR = std::max(peakR, std::abs(dataR[i]));
+    }
+
+    const float decay = 0.90f;
+    const auto newL = std::max(peakL, meterL.load() * decay);
+    const auto newR = std::max(peakR, meterR.load() * decay);
+
+    meterL.store(newL);
+    meterR.store(newR);
+
+    if (peakL > 1.0f || peakR > 1.0f)
+    {
+        clipHold.store(holdSamples);
+        clipFlag.store(true);
+    }
+    else
+    {
+        auto remaining = clipHold.load();
+        remaining = std::max(0, remaining - numSamples);
+        clipHold.store(remaining);
+        if (remaining == 0)
+            clipFlag.store(false);
     }
 }
 
@@ -366,6 +447,23 @@ juce::AudioProcessorValueTreeState::ParameterLayout SixteenSecondAudioProcessor:
         "Authentic",
         false));
 
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "filter",
+        "Filter",
+        juce::NormalisableRange<float>{0.0f, 1.0f, 0.001f},
+        0.6f));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "noise",
+        "Noise/Grit",
+        juce::NormalisableRange<float>{0.0f, 1.0f, 0.001f},
+        0.25f));
+
+    params.push_back(std::make_unique<juce::AudioParameterBool>(
+        "limiter",
+        "Limiter",
+        true));
+
     return {params.begin(), params.end()};
 }
 
@@ -378,8 +476,19 @@ void SixteenSecondAudioProcessor::resetLoopState()
     recordedSamples = 0;
     loopStepper.reset(0.0);
     delaySmoother.reset(getSampleRate(), 0.0f, 10.0f);
+    feedbackModel.reset(getSampleRate());
+    limiterL.reset(getSampleRate());
+    limiterR.reset(getSampleRate());
     currentState = LoopState::Idle;
     lastClear = false;
+    noiseSeed = 0x1234567u;
+}
+
+float SixteenSecondAudioProcessor::generateNoise()
+{
+    noiseSeed = noiseSeed * 1664525u + 1013904223u;
+    const auto value = static_cast<float>((noiseSeed >> 8) & 0x00FFFFFFu) / 16777215.0f;
+    return value;
 }
 
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
