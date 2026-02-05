@@ -3,6 +3,62 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 
+struct VisualStateTargets
+{
+    float postureCompression = 0.0f;
+    float tiltRadians = 0.0f;
+    float jitterAmount = 0.0f;
+    float dangerAmount = 0.0f;
+};
+
+class SurfaceComponent final : public juce::Component
+{
+public:
+    SurfaceComponent();
+
+    void setTargets(const VisualStateTargets& newTargets);
+    void setDebug(bool shouldExaggerate);
+    void tick();
+
+    juce::Component& getContent() { return content; }
+
+    void paint(juce::Graphics& g) override;
+
+    void setMeterData(float newMeterL, float newMeterR, bool newClip,
+                      bool newRec, bool newPlay, bool newOverdub);
+
+    void setVisualBounds(const juce::Rectangle<int>& newMeterArea,
+                         const juce::Rectangle<int>& newClipLed,
+                         const juce::Rectangle<int>& newRecLed,
+                         const juce::Rectangle<int>& newPlayLed,
+                         const juce::Rectangle<int>& newOverdubLed);
+
+private:
+    void updateTransform();
+
+    juce::Component content;
+    VisualStateTargets targets;
+    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> posture;
+    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> tilt;
+    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> jitter;
+    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> danger;
+    float jitterPhase = 0.0f;
+    bool debug = false;
+    juce::AffineTransform currentTransform;
+
+    juce::Rectangle<int> meterArea;
+    juce::Rectangle<int> clipLedArea;
+    juce::Rectangle<int> recLedArea;
+    juce::Rectangle<int> playLedArea;
+    juce::Rectangle<int> overdubLedArea;
+    float meterL = 0.0f;
+    float meterR = 0.0f;
+    bool clipOn = false;
+    bool recOn = false;
+    bool playOn = false;
+    bool overdubOn = false;
+};
+
 class SixteenSecondAudioProcessorEditor final : public juce::AudioProcessorEditor,
                                                 private juce::Timer
 {
@@ -13,9 +69,12 @@ public:
     void paint(juce::Graphics&) override;
     void resized() override;
     void timerCallback() override;
+    bool keyPressed(const juce::KeyPress& key) override;
 
 private:
     SixteenSecondAudioProcessor& processor;
+    SurfaceComponent surface;
+    bool debugMorph = false;
 
     juce::Slider delayTimeSlider;
     juce::Label delayTimeLabel;
@@ -73,18 +132,6 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> reverseAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> authenticAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> limiterAttachment;
-
-    juce::Rectangle<int> meterArea;
-    juce::Rectangle<int> clipLedArea;
-    juce::Rectangle<int> recLedArea;
-    juce::Rectangle<int> playLedArea;
-    juce::Rectangle<int> overdubLedArea;
-    float meterL = 0.0f;
-    float meterR = 0.0f;
-    bool clipOn = false;
-    bool recOn = false;
-    bool playOn = false;
-    bool overdubOn = false;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SixteenSecondAudioProcessorEditor)
 };
