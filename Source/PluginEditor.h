@@ -2,6 +2,8 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include "HouseLookAndFeel.h"
+#include "BackgroundWavesComponent.h"
 
 class SixteenSecondAudioProcessorEditor final : public juce::AudioProcessorEditor,
                                                 private juce::Timer
@@ -16,6 +18,8 @@ public:
 
 private:
     SixteenSecondAudioProcessor& processor;
+    HouseLookAndFeel lookAndFeel;
+    BackgroundWavesComponent background;
 
     juce::Slider delayTimeSlider;
     juce::Label delayTimeLabel;
@@ -74,11 +78,6 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> authenticAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> limiterAttachment;
 
-    juce::Rectangle<int> meterArea;
-    juce::Rectangle<int> clipLedArea;
-    juce::Rectangle<int> recLedArea;
-    juce::Rectangle<int> playLedArea;
-    juce::Rectangle<int> overdubLedArea;
     float meterL = 0.0f;
     float meterR = 0.0f;
     bool clipOn = false;

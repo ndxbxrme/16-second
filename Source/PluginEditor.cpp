@@ -5,11 +5,13 @@ namespace
     constexpr int kSliderWidth = 80;
     constexpr int kSliderHeight = 170;
     constexpr int kSliderGap = 6;
-    constexpr int kSliderCount = 10;
+    constexpr int kSliderCount = 9;
     constexpr int kLeftColumnWidth = 210;
-    constexpr int kMeterWidth = 70;
+    constexpr int kRightPanelWidth = 120;
+    constexpr int kMeterWidth = 34;
     constexpr int kMargin = 16;
-    constexpr int kHeaderHeight = 48;
+    constexpr int kHeaderHeight = 56;
+    constexpr bool kAnimateWaves = true;
 
     void configureSlider(juce::Slider& slider)
     {
@@ -21,6 +23,11 @@ namespace
 SixteenSecondAudioProcessorEditor::SixteenSecondAudioProcessorEditor(SixteenSecondAudioProcessor& p)
     : AudioProcessorEditor(&p), processor(p)
 {
+    setLookAndFeel(&lookAndFeel);
+    addAndMakeVisible(background);
+    background.toBack();
+    background.setInterceptsMouseClicks(false, false);
+    background.setAnimationEnabled(kAnimateWaves);
     configureSlider(delayTimeSlider);
     delayTimeSlider.setRange(0.0, 16000.0, 1.0);
     delayTimeLabel.setText("Delay", juce::dontSendNotification);
@@ -168,80 +175,33 @@ SixteenSecondAudioProcessorEditor::SixteenSecondAudioProcessorEditor(SixteenSeco
         processor.getAPVTS(), "limiter", limiterButton);
 
     const int totalSliderWidth = kSliderWidth * kSliderCount + kSliderGap * (kSliderCount - 1);
-    const int totalWidth = kLeftColumnWidth + totalSliderWidth + kMeterWidth + kMargin * 2;
+    const int totalWidth = kLeftColumnWidth + totalSliderWidth + kRightPanelWidth + kMargin * 2;
     setSize(totalWidth, 360);
     startTimerHz(30);
 }
 
-SixteenSecondAudioProcessorEditor::~SixteenSecondAudioProcessorEditor() = default;
+SixteenSecondAudioProcessorEditor::~SixteenSecondAudioProcessorEditor()
+{
+    setLookAndFeel(nullptr);
+}
 
 void SixteenSecondAudioProcessorEditor::paint(juce::Graphics& g)
 {
-    auto bounds = getLocalBounds();
-    juce::Colour base = juce::Colour::fromRGB(18, 18, 20);
-    juce::Colour panel = juce::Colour::fromRGB(32, 32, 36);
-    juce::Colour accent = juce::Colour::fromRGB(231, 168, 74);
-    juce::Colour text = juce::Colour::fromRGB(228, 228, 228);
-
-    g.fillAll(base);
-
-    auto header = bounds.removeFromTop(48);
-    g.setColour(panel);
-    g.fillRect(header);
-
-    g.setColour(accent);
-    g.setFont(juce::Font("Georgia", 20.0f, juce::Font::bold));
-    g.drawText("16-Second", header.removeFromLeft(200), juce::Justification::centredLeft);
-
-    g.setColour(text);
-    g.setFont(juce::Font("Georgia", 12.0f, juce::Font::italic));
-    g.drawText("unsafe digital delay/looper", header.removeFromLeft(220), juce::Justification::centredLeft);
-
-    g.setColour(panel);
-    g.fillRoundedRectangle(meterArea.toFloat(), 6.0f);
-
-    const auto meterHeight = meterArea.getHeight() - 8;
-    const auto meterWidth = meterArea.getWidth() / 2 - 10;
-    const auto baseY = meterArea.getBottom() - 4;
-
-    const auto filledL = static_cast<int>(meterHeight * juce::jlimit(0.0f, 1.0f, meterL));
-    const auto filledR = static_cast<int>(meterHeight * juce::jlimit(0.0f, 1.0f, meterR));
-
-    const auto leftMeter = juce::Rectangle<int>(meterArea.getX() + 6,
-                                                baseY - filledL,
-                                                meterWidth,
-                                                filledL);
-    const auto rightMeter = juce::Rectangle<int>(meterArea.getX() + meterWidth + 14,
-                                                 baseY - filledR,
-                                                 meterWidth,
-                                                 filledR);
-
-    g.setColour(juce::Colour::fromRGB(82, 214, 125));
-    g.fillRect(leftMeter);
-    g.fillRect(rightMeter);
-
-    g.setColour(clipOn ? juce::Colours::red : juce::Colour::fromRGB(80, 20, 20));
-    g.fillEllipse(clipLedArea.toFloat());
-
-    auto drawLed = [&](const juce::Rectangle<int>& area, juce::Colour onColour, bool isOn)
-    {
-        g.setColour(isOn ? onColour : onColour.darker(0.6f));
-        g.fillEllipse(area.toFloat());
-    };
-
-    drawLed(recLedArea, juce::Colour::fromRGB(220, 60, 60), recOn);
-    drawLed(playLedArea, juce::Colour::fromRGB(60, 220, 120), playOn);
-    drawLed(overdubLedArea, juce::Colour::fromRGB(230, 170, 50), overdubOn);
+    juce::ignoreUnused(g);
 }
 
 void SixteenSecondAudioProcessorEditor::resized()
 {
     auto area = getLocalBounds().reduced(kMargin);
-    area.removeFromTop(kHeaderHeight);
+    auto header = area.removeFromTop(kHeaderHeight);
 
     auto leftColumn = area.removeFromLeft(kLeftColumnWidth);
     auto topRow = area.removeFromTop(kSliderHeight);
     auto sliderArea = topRow.removeFromLeft(kSliderWidth * kSliderCount + kSliderGap * (kSliderCount - 1));
+    auto rightPanelArea = topRow.removeFromLeft(kRightPanelWidth);
+    const auto leftPanelBounds = leftColumn;
+    const auto mainPanelBounds = sliderArea;
+    const auto rightPanelBounds = rightPanelArea;
 
     auto addSlider = [&](juce::Component& slider)
     {
@@ -258,7 +218,9 @@ void SixteenSecondAudioProcessorEditor::resized()
     addSlider(noiseSlider);
     addSlider(overdubLevelSlider);
     addSlider(erodeAmountSlider);
-    addSlider(outputGainSlider);
+
+    auto outputArea = rightPanelArea.reduced(16, 14);
+    outputGainSlider.setBounds(outputArea);
 
     auto buttonArea = leftColumn.removeFromTop(200);
     recordButton.setBounds(buttonArea.removeFromTop(32).reduced(8, 2));
@@ -273,15 +235,18 @@ void SixteenSecondAudioProcessorEditor::resized()
     limiterButton.setBounds(modeArea.removeFromTop(28).reduced(8, 2));
 
     auto ledArea = leftColumn.removeFromTop(32).reduced(8, 6);
-    recLedArea = ledArea.removeFromLeft(20);
+    const auto recLed = ledArea.removeFromLeft(20);
     ledArea.removeFromLeft(8);
-    playLedArea = ledArea.removeFromLeft(20);
+    const auto playLed = ledArea.removeFromLeft(20);
     ledArea.removeFromLeft(8);
-    overdubLedArea = ledArea.removeFromLeft(20);
+    const auto overdubLed = ledArea.removeFromLeft(20);
 
-    meterArea = topRow.removeFromLeft(kMeterWidth).withTrimmedTop(10).withTrimmedBottom(10);
-    const auto led = meterArea.removeFromTop(16);
-    clipLedArea = led.withSizeKeepingCentre(12, 12);
+    background.setBounds(getLocalBounds());
+    background.setPanels(header.toFloat(),
+                         leftPanelBounds.withTrimmedTop(4).withTrimmedBottom(6).toFloat(),
+                         mainPanelBounds.withTrimmedTop(-8).withTrimmedBottom(20).toFloat(),
+                         rightPanelBounds.withTrimmedTop(-8).withTrimmedBottom(20).toFloat());
+    background.setMeterData(meterL, meterR);
 }
 
 void SixteenSecondAudioProcessorEditor::timerCallback()
@@ -292,5 +257,6 @@ void SixteenSecondAudioProcessorEditor::timerCallback()
     recOn = processor.getAPVTS().getRawParameterValue("record")->load() > 0.5f;
     playOn = processor.getAPVTS().getRawParameterValue("play")->load() > 0.5f;
     overdubOn = processor.getAPVTS().getRawParameterValue("overdub")->load() > 0.5f;
+    background.setMeterData(meterL, meterR);
     repaint();
 }

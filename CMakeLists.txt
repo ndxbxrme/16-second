@@ -51,6 +51,10 @@ target_sources(16Second
     Source/PluginProcessor.h
     Source/PluginEditor.cpp
     Source/PluginEditor.h
+    Source/HouseLookAndFeel.cpp
+    Source/HouseLookAndFeel.h
+    Source/BackgroundWavesComponent.cpp
+    Source/BackgroundWavesComponent.h
     Source/dsp/MemoryBuffer.cpp
     Source/dsp/MemoryBuffer.h
     Source/dsp/StateMachine.cpp
