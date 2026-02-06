@@ -2,15 +2,15 @@
 
 namespace
 {
-    constexpr int kSliderWidth = 80;
+    constexpr int kSliderWidth = 76;
     constexpr int kSliderHeight = 170;
-    constexpr int kSliderGap = 6;
+    constexpr int kSliderGap = 4;
     constexpr int kSliderCount = 9;
-    constexpr int kLeftColumnWidth = 210;
-    constexpr int kRightPanelWidth = 120;
-    constexpr int kMeterWidth = 34;
-    constexpr int kMargin = 16;
-    constexpr int kHeaderHeight = 56;
+    constexpr int kLeftColumnWidth = 200;
+    constexpr int kRightPanelWidth = 110;
+    constexpr int kMeterWidth = 32;
+    constexpr int kMargin = 20;
+    constexpr int kHeaderHeight = 68;
     constexpr bool kAnimateWaves = true;
 
     void configureSlider(juce::Slider& slider)
@@ -194,9 +194,10 @@ void SixteenSecondAudioProcessorEditor::resized()
 {
     auto area = getLocalBounds().reduced(kMargin);
     auto header = area.removeFromTop(kHeaderHeight);
+    area.removeFromTop(6);
 
     auto leftColumn = area.removeFromLeft(kLeftColumnWidth);
-    auto topRow = area.removeFromTop(kSliderHeight);
+    auto topRow = area.removeFromTop(kSliderHeight + 14).withTrimmedTop(8);
     auto sliderArea = topRow.removeFromLeft(kSliderWidth * kSliderCount + kSliderGap * (kSliderCount - 1));
     auto rightPanelArea = topRow.removeFromLeft(kRightPanelWidth);
     const auto leftPanelBounds = leftColumn;
@@ -222,17 +223,17 @@ void SixteenSecondAudioProcessorEditor::resized()
     auto outputArea = rightPanelArea.reduced(16, 14);
     outputGainSlider.setBounds(outputArea);
 
-    auto buttonArea = leftColumn.removeFromTop(200);
-    recordButton.setBounds(buttonArea.removeFromTop(32).reduced(8, 2));
-    playButton.setBounds(buttonArea.removeFromTop(32).reduced(8, 2));
-    overdubButton.setBounds(buttonArea.removeFromTop(32).reduced(8, 2));
-    clearButton.setBounds(buttonArea.removeFromTop(32).reduced(8, 2));
+    auto buttonArea = leftColumn.removeFromTop(210);
+    recordButton.setBounds(buttonArea.removeFromTop(36).reduced(8, 3));
+    playButton.setBounds(buttonArea.removeFromTop(36).reduced(8, 3));
+    overdubButton.setBounds(buttonArea.removeFromTop(36).reduced(8, 3));
+    clearButton.setBounds(buttonArea.removeFromTop(36).reduced(8, 3));
 
-    auto modeArea = leftColumn.removeFromTop(130);
-    halfSpeedButton.setBounds(modeArea.removeFromTop(28).reduced(8, 2));
-    reverseButton.setBounds(modeArea.removeFromTop(28).reduced(8, 2));
-    authenticButton.setBounds(modeArea.removeFromTop(28).reduced(8, 2));
-    limiterButton.setBounds(modeArea.removeFromTop(28).reduced(8, 2));
+    auto modeArea = leftColumn.removeFromTop(150);
+    halfSpeedButton.setBounds(modeArea.removeFromTop(32).reduced(8, 3));
+    reverseButton.setBounds(modeArea.removeFromTop(32).reduced(8, 3));
+    authenticButton.setBounds(modeArea.removeFromTop(32).reduced(8, 3));
+    limiterButton.setBounds(modeArea.removeFromTop(32).reduced(8, 3));
 
     auto ledArea = leftColumn.removeFromTop(32).reduced(8, 6);
     const auto recLed = ledArea.removeFromLeft(20);

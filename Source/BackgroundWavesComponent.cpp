@@ -35,14 +35,14 @@ void BackgroundWavesComponent::paint(juce::Graphics& g)
     g.drawImageAt(background, 0, 0);
     drawWaves(g, getLocalBounds().toFloat());
 
-    drawGlassPanel(g, headerPanel, 16.0f);
+    drawGlassPanel(g, headerPanel, 18.0f);
     drawGlassPanel(g, leftPanel, 18.0f);
     drawGlassPanel(g, mainPanel, 18.0f);
     drawGlassPanel(g, rightPanel, 18.0f);
 
     if (!headerPanel.isEmpty())
     {
-        auto header = headerPanel.reduced(16.0f, 8.0f);
+        auto header = headerPanel.reduced(18.0f, 10.0f);
         g.setColour(juce::Colour::fromRGB(235, 240, 250));
         g.setFont(juce::Font("Georgia", 26.0f, juce::Font::bold));
         g.drawText("16-Second", header.removeFromLeft(260.0f), juce::Justification::centredLeft);

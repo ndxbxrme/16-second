@@ -63,7 +63,8 @@ void HouseLookAndFeel::drawToggleButton(juce::Graphics& g,
                                         bool, bool)
 {
     auto bounds = button.getLocalBounds().toFloat();
-    const auto box = bounds.removeFromLeft(bounds.getHeight()).reduced(2.0f);
+    const auto boxSize = std::max(18.0f, bounds.getHeight() - 4.0f);
+    const auto box = bounds.removeFromLeft(boxSize).withSizeKeepingCentre(boxSize, boxSize).reduced(2.0f);
 
     const auto on = button.getToggleState();
     const auto fill = on ? cyan.withAlpha(0.7f) : panelDark.withAlpha(0.8f);
@@ -75,7 +76,7 @@ void HouseLookAndFeel::drawToggleButton(juce::Graphics& g,
     g.fillRoundedRectangle(box, 6.0f);
 
     g.setColour(baseText);
-    g.setFont(15.0f);
+    g.setFont(15.5f);
     g.drawText(button.getButtonText(), bounds.withTrimmedLeft(8), juce::Justification::centredLeft);
 }
 
